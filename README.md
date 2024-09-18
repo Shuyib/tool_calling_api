@@ -58,4 +58,4 @@ This project uses LLMs to send airtime to a phone number. The difference is that
 Contributions are welcome. If you would like to contribute to the project, you can fork the repository, create a new branch, make your changes and then create a pull request.
 
 ## License
-License information.
+[License information](https://github.com/Shuyib/tool_calling_api/blob/main/LICENSE).
