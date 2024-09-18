@@ -15,9 +15,9 @@ Ensure ollamas is installed on your machine and running before running this proj
 ├── README.md - This file contains the project documentation. This is the file you are currently reading.     
 ├── requirements.txt - This file contains the dependencies for the project.   
 └── utils - This directory contains the utility files for the project.  
-    ├── __init__.py - This file initializes the utils directory as a package.
-    ├── function_call.py - This file contains the code to call a function using LLMs.
-    └── send_airtime.py - This file contains the code to send airtime to a phone number.
+    ├── __init__.py - This file initializes the utils directory as a package.   
+    ├── function_call.py - This file contains the code to call a function using LLMs.     
+    └── send_airtime.py - This file contains the code to send airtime to a phone number.    
 
 ## Installation
 The project uses python 3.12. To install the project, follow the steps below:    
