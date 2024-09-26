@@ -7,7 +7,8 @@ NB: The phone numbers are placeholders for the actual phone numbers.
 You need some VRAM to run this project. You can get a free VRAM from [here](https://vast.ai/)
 We recommend 2-8GB of VRAM for this project. It can run on CPU however, I recommend smaller models for this.   
 Mistral 7B, **llama 3.2 3B** and llama3.1 8B are the recommended models for this project.   
-Ensure ollama is installed on your laptop/server and running before running this project. You can install ollamas from [here](ollama.com)
+Ensure ollama is installed on your laptop/server and running before running this project. You can install ollamas from [here](ollama.com)   
+Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 
 ## File structure
 .   
