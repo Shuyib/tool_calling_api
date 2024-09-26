@@ -5,19 +5,19 @@ Function-calling with Python and ollama. We are going to use the Africa's Talkin
 
 NB: The phone numbers are placeholders for the actual phone numbers.
 You need some VRAM to run this project. You can get a free VRAM from [here](https://vast.ai/)
-We recommend 4-8GB of VRAM for this project. 
-Mistral 7B and llama3.1 8B are the recommended models for this project.
-Ensure ollamas is installed on your machine and running before running this project. You can install ollamas from [here](ollama.com)
+We recommend 2-8GB of VRAM for this project. It can run on CPU however, I recommend smaller models for this.   
+Mistral 7B, **llama 3.2 3B** and llama3.1 8B are the recommended models for this project.   
+Ensure ollama is installed on your laptop/server and running before running this project. You can install ollamas from [here](ollama.com)
 
 ## File structure
 .   
 ├── Makefile - This file contains the commands to run the project.   
-├── README.md - This file contains the project documentation. This is the file you are currently reading.     
-├── requirements.txt - This file contains the dependencies for the project.   
-└── utils - This directory contains the utility files for the project.  
-    ├── __init__.py - This file initializes the utils directory as a package.   
-    ├── function_call.py - This file contains the code to call a function using LLMs.     
-    └── send_airtime.py - This file contains the code to send airtime to a phone number.    
+├── README.md - This file contains the project documentation. This is the file you are currently reading.       
+├── requirements.txt - This file contains the dependencies for the project.         
+└── utils - This directory contains the utility files for the project.      
+    ├── __init__.py - This file initializes the utils directory as a package.    
+    ├── function_call.py - This file contains the code to call a function using LLMs.       
+    └── send_airtime.py - This file contains the code to send airtime to a phone number.       
 
 ## Installation
 The project uses python 3.12. To install the project, follow the steps below:    
