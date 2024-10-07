@@ -15,10 +15,11 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 ├── Makefile - This file contains the commands to run the project.   
 ├── README.md - This file contains the project documentation. This is the file you are currently reading.       
 ├── requirements.txt - This file contains the dependencies for the project.         
-└── utils - This directory contains the utility files for the project.      
+└── utils - This directory contains the utility files for the project.     
     ├── __init__.py - This file initializes the utils directory as a package.    
     ├── function_call.py - This file contains the code to call a function using LLMs.       
-    └── send_airtime.py - This file contains the code to send airtime to a phone number.       
+    └── send_airtime.py - This file contains the code to send airtime to a phone number.     
+    └── app.py - This is the gradio application of the function_call.py. Has a friendlier UserInterface.   
 
 ## Installation
 The project uses python 3.12. To install the project, follow the steps below:    
@@ -54,6 +55,12 @@ This project uses LLMs to send airtime to a phone number. The difference is that
 - Send airtime to xxxxxxxxxx046 and xxxxxxxxxx524 with an amount of 10 in currency KES
 - Send a message to xxxxxxxxxx046 and xxxxxxxxxx524 with a message "Hello, how are you?", using the username "username".
 
+## Use cases
+    * Non-Technical User Interfaces: Simplifies the process for non-coders to interact with APIs, making it easier for them to send airtime and messages without needing to understand the underlying code.    
+    * Customer Support Automation: Enables customer support teams to quickly send airtime or messages to clients using natural language commands, improving efficiency and response times.    
+    * Marketing Campaigns: Facilitates the automation of promotional messages and airtime rewards to customers, enhancing engagement and retention.    
+    * Emergency Notifications: Allows rapid dissemination of urgent alerts and notifications to a large number of recipients using simple prompts.    
+    * Educational Tools: Provides a practical example for teaching how to integrate APIs with natural language processing, which can be beneficial for coding bootcamps and workshops.    
 
 ## Contributing
 Contributions are welcome. If you would like to contribute to the project, you can fork the repository, create a new branch, make your changes and then create a pull request.
