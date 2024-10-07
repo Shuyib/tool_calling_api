@@ -12,15 +12,16 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 
 ## File structure
 .   
+├── Dockerfile - template to run the project in one shot.      
+├── app.py - the function_call.py using gradio as the User Interface.  
 ├── Makefile - This file contains the commands to run the project.   
 ├── README.md - This file contains the project documentation. This is the file you are currently reading.       
 ├── requirements.txt - This file contains the dependencies for the project.         
-└── utils - This directory contains the utility files for the project.     
+└── utils - This directory contains the utility files for the project.      
     ├── __init__.py - This file initializes the utils directory as a package.    
     ├── function_call.py - This file contains the code to call a function using LLMs.       
-    └── send_airtime.py - This file contains the code to send airtime to a phone number.     
-    └── app.py - This is the gradio application of the function_call.py. Has a friendlier UserInterface.   
-
+    └── send_airtime.py - This file contains the code to send airtime to a phone number.       
+    
 ## Installation
 The project uses python 3.12. To install the project, follow the steps below:    
 
