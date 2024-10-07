@@ -12,9 +12,6 @@ RUN apt-get update && \
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the requirements file and install dependencies
-COPY requirements.txt .
-
 # Copy the application code
 COPY . .
 
