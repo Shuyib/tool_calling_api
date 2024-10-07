@@ -17,6 +17,8 @@ Credentials for the Africa's Talking API are loaded from
 environment variables `AT_USERNAME` and `AT_API_KEY`.
 
 Credit: https://www.youtube.com/watch?v=i0tsVzRbsNU
+
+You'll be prompted your computer password for codecarbon to track emissions.
 """
 
 import os
@@ -26,13 +28,14 @@ from importlib.metadata import version
 import asyncio
 import africastalking
 import ollama
+from codecarbon import EmissionsTracker
 
 
 # Set up the logger
 logger = logging.getLogger(__name__)
 
 # Set up logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 # Logging format
 formatter = logging.Formatter("%(asctime)s:%(name)s:%(message)s")
@@ -43,7 +46,6 @@ file_handler.setFormatter(formatter)
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
 
-
 # Add the file handler to the logger
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
@@ -51,7 +53,6 @@ logger.addHandler(stream_handler)
 # Flush logs
 for handler in logger.handlers:
     handler.flush()
-
 
 # Log the start of the script
 logger.info(
@@ -65,7 +66,7 @@ pkgs = ["africastalking", "ollama"]
 
 for pkg in pkgs:
     try:
-        logger.info("%s version: %s", pkg, version(pkg))
+        logger.debug("%s version: %s", pkg, version(pkg))
     except Exception as e:
         logger.error("Failed to import %s: %s", pkg, str(e))
 
@@ -73,6 +74,9 @@ for pkg in pkgs:
 # this is to ensure that the logs are written to the file
 for handler in logger.handlers:
     handler.flush()
+
+# Set the region explicitly to East Africa
+os.environ["CODECARBON_REGION"] = "africa_east"
 
 
 # Mask phone number and API key for the logs
@@ -84,7 +88,6 @@ def mask_phone_number(phone_number):
     - This is information that can be used to
     identify a person. PIIs (Personally Identifiable Information)
     should be protected.
-
 
     Parameters
     ----------
@@ -111,7 +114,6 @@ def mask_api_key(api_key):
     Parameters
     ----------
     api_key : str : The API key to mask.
-
 
     Returns
     -------
@@ -142,7 +144,6 @@ def send_airtime(phone_number: str, currency_code: str, amount: str) -> str:
     The amount of airtime to send. It should be a string. eg. "10"
     That means you'll send airtime worth 10 currency units.
 
-
     Returns
     -------
     None
@@ -172,7 +173,7 @@ def send_airtime(phone_number: str, currency_code: str, amount: str) -> str:
         responses = airtime.send(
             phone_number=phone_number, amount=amount, currency_code=currency_code
         )
-        logger.info("The response from sending airtime: %s", responses)
+        logger.debug("The response from sending airtime: %s", responses)
         return json.dumps(responses)
     except Exception as e:
         logger.error("Encountered an error while sending airtime: %s", str(e))
@@ -195,7 +196,6 @@ def send_message(phone_number: str, message: str, username: str) -> None:
 
     username: str : The username to use for sending the message.
     this is the username you used to sign up for the Africa's Talking account.
-
 
     Returns
     -------
@@ -223,7 +223,7 @@ def send_message(phone_number: str, message: str, username: str) -> None:
     try:
         # Send the message
         response = sms.send(message, [phone_number])
-        logger.info("Message sent to %s. Response: %s", masked_number, response)
+        logger.debug("Message sent to %s. Response: %s", masked_number, response)
         return json.dumps(response)
     except Exception as e:
         logger.error("Encountered an error while sending the message: %s", str(e))
@@ -323,8 +323,8 @@ async def run(model: str, user_input: str):
 
     # Check if the model decided to use the provided function
     if not response["message"].get("tool_calls"):
-        logger.info("The model didn't use the function. Its response was:")
-        logger.info(response["message"]["content"])
+        logger.debug("The model didn't use the function. Its response was:")
+        logger.debug(response["message"]["content"])
         return None
 
     if response["message"].get("tool_calls"):
@@ -336,7 +336,7 @@ async def run(model: str, user_input: str):
         for tool in response["message"]["tool_calls"]:
             # Get the function to call based on the tool name
             function_to_call = available_functions[tool["function"]["name"]]
-            logger.info("function to call: %s", function_to_call)
+            logger.debug("function to call: %s", function_to_call)
 
             # Call the function with the provided arguments
             if tool["function"]["name"] == "send_airtime":
@@ -351,7 +351,7 @@ async def run(model: str, user_input: str):
                     tool["function"]["arguments"]["message"],
                     tool["function"]["arguments"]["username"],
                 )
-                logger.info("function response: %s", function_response)
+                logger.debug("function response: %s", function_response)
 
             # Add the function response to the conversation history
             messages.append(
@@ -363,18 +363,27 @@ async def run(model: str, user_input: str):
 
 
 # Main loop to get user input and run the conversation
-while True:
-    user_prompt = input(
-        "\n Hi, you can send airtime and messages using this interface for example \n\n"
-        "Send airtime to +254712345678 with an amount of 10 in currency KES \n\n"
-        "Send a message to +254712345678 with the message 'Hello there', using the username 'your_username'\n\n"
-        "=> "
-    )
-    if not user_prompt:
-        logger.info("No input provided. Exiting...")
-        break
-    if user_prompt.lower() == "exit":
-        break
+if __name__ == "__main__":
+    while True:
+        user_prompt = input(
+            "\n Hi, you can send airtime and messages using this interface for example \n\n"
+            "Send airtime to +254712345678 with an amount of 10 in currency KES \n\n"
+            "Send a message to +254712345678 with the message 'Hello there', using the username 'your_username'\n\n"
+            "=> "
+        )
+        if not user_prompt:
+            logger.info("No input provided. Exiting...")
+            break
+        elif user_prompt.lower() == "exit":
+            break
 
-    # Run the asynchronous function
-    asyncio.run(run("llama3.1", user_input=user_prompt))
+        # Run the asynchronous function with tracker
+        with EmissionsTracker(
+            measure_power_secs=15,
+            tracking_mode="offline",
+            output_dir="carbon_output",
+            project_name="function_call",
+            experiment_name="send_airtime_and_messages",
+        ) as tracker:
+            asyncio.run(run("llama3.2", user_input=user_prompt))
+            tracker.stop()
