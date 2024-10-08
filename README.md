@@ -10,6 +10,17 @@ Mistral 7B, **llama 3.2 3B** and llama3.1 8B are the recommended models for this
 Ensure ollama is installed on your laptop/server and running before running this project. You can install ollama from [here](ollama.com)   
 Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 
+
+## Table of contents
+- [File structure](#file-structure)
+- [Installation](#installation)
+- [Run in Docker](#run-in-docker)
+- [Usage](#usage)
+- [Use cases](#use-cases)
+- [Contributing](#contributing)
+- [License](#license)    
+
+
 ## File structure
 .   
 ├── Dockerfile - template to run the project in one shot.      
@@ -32,7 +43,20 @@ git clone
 - Change directory to the project directory
 ```bash
 cd Function-calling
+```   
+Create a virtual environment
+```bash
+python3 -m venv venv
 ```
+Activate the virtual environment
+```bash
+source venv/bin/activate
+```
+Confirm if steps of Makefile are working
+```bash
+make -n
+```
+
 - Install the dependencies
 ```bash
 make install
@@ -50,6 +74,30 @@ cd utils
 ```bash
 python function_call.py
 ```
+- Run the Gradion UI instead
+```bash
+python ../app.py
+```
+
+## Run in Docker
+To run the project in Docker, follow the steps below:
+
+-linting Dockerfile    
+
+```bash
+make docker_run_test
+```
+
+- Build the Docker image
+```bash
+make docker_build
+```
+
+- Run the Docker image
+```bash
+make docker_run
+```
+
 
 ## Usage
 This project uses LLMs to send airtime to a phone number. The difference is that we are going to use the Africa's Talking API to send airtime to a phone number using Natural language. Here are examples of prompts you can use to send airtime to a phone number:
