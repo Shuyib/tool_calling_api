@@ -28,7 +28,7 @@ from importlib.metadata import version
 import asyncio
 import africastalking
 import ollama
-from codecarbon import EmissionsTracker
+from codecarbon import EmissionsTracker  # Import the EmissionsTracker
 
 
 # Set up the logger
@@ -127,7 +127,7 @@ def mask_api_key(api_key):
 
 
 # Function to send airtime using Africa's Talking API
-def send_airtime(phone_number: str, currency_code: str, amount: str) -> str:
+def send_airtime(phone_number: str, currency_code: str, amount: str, **kwargs) -> str:
     """Allows you to send airtime to a phone number.
 
     Parameters
@@ -180,7 +180,7 @@ def send_airtime(phone_number: str, currency_code: str, amount: str) -> str:
         return json.dumps({"error": str(e)})
 
 
-def send_message(phone_number: str, message: str, username: str) -> None:
+def send_message(phone_number: str, message: str, username: str, **kwargs) -> None:
     """Allows you to send a message to a phone number.
 
     Parameters
