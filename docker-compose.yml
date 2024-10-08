@@ -1,0 +1,90 @@
+services:
+  carbonserver:
+    depends_on:
+      - postgres  # Ensure postgres service is started before carbonserver
+    build:
+      context: ./carbonserver  # Build the Docker image from the carbonserver directory
+      dockerfile: ./carbonserver/docker/Dockerfile  # Specify the Dockerfile to use
+    volumes:
+      - ./carbonserver:/carbonserver  # Mount the carbonserver directory to the container
+    ports:
+      - "8008:8000"  # Map port 8008 on the host to port 8000 in the container
+    environment:
+      CODECARBON_LOG_LEVEL: DEBUG  # Set the log level to DEBUG
+      DATABASE_URL: "postgresql://${DATABASE_USER:-codecarbon-user}:${DATABASE_PASS:-supersecret}@${DATABASE_HOST:-postgres}:${DATABASE_PORT:-5432}/${DATABASE_NAME:-codecarbon_db}"  # Database connection string
+    networks:
+      - codecarbon_net  # Connect to the codecarbon_net network
+
+  postgres:
+    container_name: ${DATABASE_HOST:-postgres_codecarbon}  # Set the container name
+    image: postgres:13  # Use the postgres:13 image
+    environment:
+      HOSTNAME: ${DATABASE_HOST:-postgres_codecarbon}  # Set the hostname
+      POSTGRES_DB: ${DATABASE_NAME:-codecarbon_db}  # Set the database name
+      POSTGRES_USER: ${DATABASE_USER:-codecarbon-user}  # Set the database user
+      POSTGRES_PASSWORD: ${DATABASE_PASS:-supersecret}  # Set the database password
+    ports:
+      - "5480:5432"  # Map port 5480 on the host to port 5432 in the container
+    volumes:
+      - postgres_data:/var/lib/postgresql/data:rw  # Persist data in a named volume
+    networks:
+      - codecarbon_net  # Connect to the codecarbon_net network
+    restart: unless-stopped  # Restart policy
+
+  pgadmin:
+    container_name: pgadmin_codecarbon  # Set the container name
+    image: dpage/pgadmin4  # Use the dpage/pgadmin4 image
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-test@test.com}  # Set the default email for pgAdmin
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-test}  # Set the default password for pgAdmin
+    ports:
+      - "${PGADMIN_PORT:-5080}:80"  # Map the specified port on the host to port 80 in the container
+    volumes:
+      - pgadmin:/root/.pgadmin  # Persist pgAdmin data in a named volume
+      - ./carbonserver/docker/pgpassfile:/pgadmin4/pgpassfile  # Mount pgpassfile for pgAdmin
+      - ./carbonserver/docker/pgadmin-servers.json:/pgadmin4/servers.json  # Mount servers.json for pgAdmin
+    networks:
+      - codecarbon_net  # Connect to the codecarbon_net network
+    restart: unless-stopped  # Restart policy
+
+  prometheus:
+    image: prom/prometheus:latest  # Use the latest Prometheus image
+    ports:
+      - "9090:9090"  # Map port 9090 on the host to port 9090 in the container
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml  # Mount the Prometheus configuration file
+    depends_on:
+      - prometheus-pushgateway  # Ensure prometheus-pushgateway service is started before prometheus
+    networks:
+      - codecarbon_net  # Connect to the codecarbon_net network
+
+  prometheus-pushgateway:
+    image: prom/pushgateway  # Use the prom/pushgateway image
+    ports:
+      - "9091:9091"  # Map port 9091 on the host to port 9091 in the container
+    networks:
+      - codecarbon_net  # Connect to the codecarbon_net network
+
+  my_app:
+    build:
+      context: .  # Build the Docker image from the current directory
+      dockerfile: ./Dockerfile  # Specify the Dockerfile to use
+    ports:
+      - "7860:7860"  # Map port 7860 on the host to port 7860 in the container
+    environment:
+      AT_API_KEY: ${AT_API_KEY}  # Set the API key environment variable
+    depends_on:
+      - carbonserver  # Ensure carbonserver service is started before my_app
+      - postgres  # Ensure postgres service is started before my_app
+    networks:
+      - codecarbon_net  # Connect to the codecarbon_net network
+
+volumes:
+  postgres_data:
+    name: postgres_codecarbon_data  # Name the volume for postgres data
+  pgadmin:
+    name: pgadmin_codecarbon_data  # Name the volume for pgAdmin data
+
+networks:
+  codecarbon_net:
+    name: codecarbon_network  # Name the network
