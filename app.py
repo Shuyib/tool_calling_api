@@ -100,7 +100,7 @@ def mask_api_key(api_key):
     return "x" * (len(api_key) - 4) + api_key[-4:]
 
 
-def send_airtime(phone_number: str, currency_code: str, amount: str) -> str:
+def send_airtime(phone_number: str, currency_code: str, amount: str, **kwargs) -> str:
     """
     Send airtime using Africa's Talking API.
 
@@ -140,7 +140,7 @@ def send_airtime(phone_number: str, currency_code: str, amount: str) -> str:
         return json.dumps({"error": str(e)})
 
 
-def send_message(phone_number: str, message: str, username: str) -> str:
+def send_message(phone_number: str, message: str, username: str, **kwargs) -> str:
     """
     Send a message using Africa's Talking API.
 
@@ -328,7 +328,6 @@ def gradio_interface(message, history):
     with EmissionsTracker(
         measure_power_secs=15,
         tracking_mode="offline",
-        output_dir="carbon_output",
         project_name="function_call",
         experiment_name="send_airtime_and_messages",
     ) as tracker:
@@ -351,4 +350,4 @@ iface = gr.ChatInterface(
 )
 
 # Launch the Gradio interface
-iface.launch()
+iface.launch(inbrowser=True, server_name="0.0.0.0", server_port=7860)
