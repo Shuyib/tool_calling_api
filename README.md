@@ -4,7 +4,7 @@ Function-calling with Python and ollama. We are going to use the Africa's Talkin
 - Send a message to xxxxxxxxx2046 and xxxxxxxxx3524 with a message "Hello, how are you?", using the username "username".
 
 NB: The phone numbers are placeholders for the actual phone numbers.
-You need some VRAM to run this project. You can get a free VRAM from [here](https://vast.ai/)
+You need some VRAM to run this project. You can get VRAM from [here](https://vast.ai/)
 We recommend 2-8GB of VRAM for this project. It can run on CPU however, I recommend smaller models for this.   
 Mistral 7B, **llama 3.2 3B** and llama3.1 8B are the recommended models for this project.   
 Ensure ollama is installed on your laptop/server and running before running this project. You can install ollama from [here](ollama.com)   
@@ -23,7 +23,8 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 
 ## File structure
 .   
-├── Dockerfile - template to run the project in one shot.      
+├── Dockerfile - template to run the project in one shot.    
+├── docker-compose.yml - use the codecarbon project and gradio dashboard.   
 ├── app.py - the function_call.py using gradio as the User Interface.  
 ├── Makefile - This file contains the commands to run the project.   
 ├── README.md - This file contains the project documentation. This is the file you are currently reading.       
@@ -82,7 +83,9 @@ python ../app.py
 ## Run in Docker
 To run the project in Docker, follow the steps below:
 
--linting Dockerfile    
+NB: You'll need to have deployed ollama elsewhere as an example [here](https://vast.ai/) or [here](https://runpod.io/). Make edits to the app.py file to point to the ollama server. You can use the OpenAI SDK to interact with the ollama server. An example can be found [here](https://github.com/pooyahrtn/RunpodOllama).
+
+-linting dockerfile
 
 ```bash
 make docker_run_test
