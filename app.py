@@ -24,7 +24,8 @@ from importlib.metadata import version
 import asyncio
 import africastalking
 import ollama
-from codecarbon import EmissionsTracker
+
+# from codecarbon import EmissionsTracker
 import gradio as gr
 
 # Set up the logger
@@ -54,7 +55,7 @@ logger.info(
 logger.info("Let's review the packages and their versions")
 
 # Set the region explicitly to East Africa
-os.environ["CODECARBON_REGION"] = "africa_east"
+# os.environ["CODECARBON_REGION"] = "africa_east"
 
 # Log versions of the libraries
 pkgs = ["africastalking", "ollama"]
@@ -177,7 +178,7 @@ def send_message(phone_number: str, message: str, username: str, **kwargs) -> st
         return json.dumps({"error": str(e)})
 
 
-async def process_user_message(message, history):
+async def process_user_message(message: str, history: list) -> str:
     """
     Handle the conversation with the model asynchronously.
 
@@ -309,7 +310,7 @@ async def process_user_message(message, history):
         return model_content
 
 
-def gradio_interface(message, history):
+def gradio_interface(message: str, history: list) -> str:
     """
     Gradio interface function to process user messages and track emissions.
 
@@ -325,14 +326,14 @@ def gradio_interface(message, history):
     str
         The model's response or the function execution result.
     """
-    with EmissionsTracker(
-        measure_power_secs=15,
-        tracking_mode="offline",
-        project_name="function_call",
-        experiment_name="send_airtime_and_messages",
-    ) as tracker:
-        response = asyncio.run(process_user_message(message, history))
-        tracker.stop()
+    # with EmissionsTracker(
+    #     measure_power_secs=15,
+    #     tracking_mode="offline",
+    #     project_name="function_call",
+    #     experiment_name="send_airtime_and_messages",
+    # ) as tracker:
+    response = asyncio.run(process_user_message(message, history))
+    # tracker.stop()
     return response
 
 
@@ -347,6 +348,7 @@ iface = gr.ChatInterface(
         "- `Send a message to +254712345678 with the message 'Hello there', using the username 'username'` 💬\n\n"
         "Please enter your command below to get started. 🚀"
     ),
+    multimodal = True,
 )
 
 # Launch the Gradio interface
