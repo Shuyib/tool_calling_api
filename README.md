@@ -28,7 +28,8 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 ├── app.py - the function_call.py using gradio as the User Interface.  
 ├── Makefile - This file contains the commands to run the project.   
 ├── README.md - This file contains the project documentation. This is the file you are currently reading.       
-├── requirements.txt - This file contains the dependencies for the project.         
+├── requirements.txt - This file contains the dependencies for the project.  
+├── summary.png - How function calling works with a diagram.   
 └── utils - This directory contains the utility files for the project.      
     ├── __init__.py - This file initializes the utils directory as a package.    
     ├── function_call.py - This file contains the code to call a function using LLMs.       
@@ -103,9 +104,11 @@ make docker_run
 
 
 ## Usage
-This project uses LLMs to send airtime to a phone number. The difference is that we are going to use the Africa's Talking API to send airtime to a phone number using Natural language. Here are examples of prompts you can use to send airtime to a phone number:
-- Send airtime to xxxxxxxxxx046 and xxxxxxxxxx524 with an amount of 10 in currency KES
+This project uses LLMs to send airtime to a phone number. The difference is that we are going to use the Africa's Talking API to send airtime to a phone number using Natural language. Here are examples of prompts you can use to send airtime to a phone number:    
+- Send airtime to xxxxxxxxxx046 and xxxxxxxxxx524 with an amount of 10 in currency KES.   
 - Send a message to xxxxxxxxxx046 and xxxxxxxxxx524 with a message "Hello, how are you?", using the username "username".
+
+![Process Summary](summary.png)
 
 ## Use cases
     * Non-Technical User Interfaces: Simplifies the process for non-coders to interact with APIs, making it easier for them to send airtime and messages without needing to understand the underlying code.    
