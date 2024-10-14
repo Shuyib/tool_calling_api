@@ -8,3 +8,6 @@ pylint==3.2.6
 pyment==0.3.3
 codecarbon==2.7.1
 gradio==5.0.0
+sendgrid 
+firebase-admin 
+boto3
