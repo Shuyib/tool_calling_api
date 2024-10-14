@@ -38,8 +38,6 @@ import asyncio
 import africastalking
 import ollama
 import gradio as gr
-
-# New imports for SendGrid, Firebase Admin, and Boto3
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 import firebase_admin
