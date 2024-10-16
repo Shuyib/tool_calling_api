@@ -7,4 +7,4 @@ black==24.8.0
 pylint==3.2.6
 pyment==0.3.3
 codecarbon==2.7.1
-gradio==5.0.0
+gradio==4.44.1
