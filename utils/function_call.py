@@ -378,12 +378,12 @@ if __name__ == "__main__":
             break
 
         # Run the asynchronous function with tracker
-        with EmissionsTracker(
-            measure_power_secs=15,
-            tracking_mode="offline",
-            output_dir="carbon_output",
-            project_name="function_call",
-            experiment_name="send_airtime_and_messages",
-        ) as tracker:
-            asyncio.run(run("llama3.2", user_input=user_prompt))
-            tracker.stop()
+        # with EmissionsTracker(
+        #     measure_power_secs=15,
+        #     tracking_mode="offline",
+        #     output_dir="carbon_output",
+        #     project_name="function_call",
+        #     experiment_name="send_airtime_and_messages",
+        # ) as tracker:
+        asyncio.run(run("llama3.2", user_input=user_prompt))
+        # tracker.stop()
