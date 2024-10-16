@@ -348,8 +348,10 @@ iface = gr.ChatInterface(
         "- `Send a message to +254712345678 with the message 'Hello there', using the username 'username'` 💬\n\n"
         "Please enter your command below to get started. 🚀"
     ),
-    multimodal = True,
 )
 
 # Launch the Gradio interface
 iface.launch(inbrowser=True, server_name="0.0.0.0", server_port=7860)
+
+# Log the end of the script
+logger.info("Script execution completed")
