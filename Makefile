@@ -73,6 +73,9 @@ run: activate install format
 	# run each file separately, bc if one fails, all fail
 	$(PYTHON) utils/function_call.py
 
+run_gradio: activate install format
+	# run gradio
+	$(PYTHON) app.py
 
 docker_build: Dockerfile
 	#build container
