@@ -264,6 +264,7 @@ async def run(model: str, user_input: str):
     response = await client.chat(
         model=model,
         messages=messages,
+        #keep_alive=True,
         tools=[
             {
                 "type": "function",
