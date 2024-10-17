@@ -205,7 +205,8 @@ async def process_user_message(message: str, history: list) -> str:
     ]
 
     response = await client.chat(
-        model="llama3.2",
+        model="qwen2.5:0.5b", 
+        # I liked this model but you can use any model more suitable for your use case
         messages=messages,
         #keep_alive=True,
         tools=[
@@ -349,6 +350,10 @@ iface = gr.ChatInterface(
         "- `Send a message to +254712345678 with the message 'Hello there', using the username 'username'` 💬\n\n"
         "Please enter your command below to get started. 🚀"
     ),
+    examples=[
+        ["Send airtime to +254712345678 with an amount of 10 in currency KES"],
+        ["Send a message to +254712345678 with the message 'Hello there', using the username 'username'"],
+    ]
 )
 
 # Launch the Gradio interface
