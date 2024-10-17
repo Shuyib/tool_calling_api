@@ -264,7 +264,7 @@ async def run(model: str, user_input: str):
     response = await client.chat(
         model=model,
         messages=messages,
-        #keep_alive=True,
+        # keep_alive=True,
         tools=[
             {
                 "type": "function",
@@ -386,5 +386,5 @@ if __name__ == "__main__":
         #     project_name="function_call",
         #     experiment_name="send_airtime_and_messages",
         # ) as tracker:
-        asyncio.run(run("llama3.2", user_input=user_prompt))
+        asyncio.run(run("qwen2.5:0.5b", user_input=user_prompt))
         # tracker.stop()
