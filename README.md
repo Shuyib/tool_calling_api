@@ -6,7 +6,7 @@ Function-calling with Python and ollama. We are going to use the Africa's Talkin
 NB: The phone numbers are placeholders for the actual phone numbers.
 You need some VRAM to run this project. You can get VRAM from [here](https://vast.ai/)
 We recommend 2-8GB of VRAM for this project. It can run on CPU however, I recommend smaller models for this.   
-[Mistral 7B](), **llama 3.2 3B/1B**, [Qwen 2.5: 0.5/1.5B](https://ollama.com/library/qwen2.5:1.5b), [nemotron-mini 4b](https://ollama.com/library/nemotron-mini) and [llama3.1 8B](https://ollama.com/library/llama3.1) are the recommended models for this project.   
+[Mistral 7B](https://ollama.com/library/mistral), **llama 3.2 3B/1B**, [**Qwen 2.5: 0.5/1.5B**](https://ollama.com/library/qwen2.5:1.5b), [nemotron-mini 4b](https://ollama.com/library/nemotron-mini) and [llama3.1 8B](https://ollama.com/library/llama3.1) are the recommended models for this project.   
 Ensure ollama is installed on your laptop/server and running before running this project. You can install ollama from [here](ollama.com)   
 Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 
