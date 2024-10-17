@@ -207,6 +207,7 @@ async def process_user_message(message: str, history: list) -> str:
     response = await client.chat(
         model="llama3.2",
         messages=messages,
+        #keep_alive=True,
         tools=[
             {
                 "type": "function",
