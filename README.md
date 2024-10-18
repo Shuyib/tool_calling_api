@@ -6,7 +6,9 @@ Function-calling with Python and ollama. We are going to use the Africa's Talkin
 NB: The phone numbers are placeholders for the actual phone numbers.
 You need some VRAM to run this project. You can get VRAM from [here](https://vast.ai/)
 We recommend 400MB-8GB of VRAM for this project. It can run on CPU however, I recommend smaller models for this.   
-[Mistral 7B](https://ollama.com/library/mistral), **llama 3.2 3B/1B**, [**Qwen 2.5: 0.5/1.5B**](https://ollama.com/library/qwen2.5:1.5b), [nemotron-mini 4b](https://ollama.com/library/nemotron-mini) and [llama3.1 8B](https://ollama.com/library/llama3.1) are the recommended models for this project.   
+
+[Mistral 7B](https://ollama.com/library/mistral), **llama 3.2 3B/1B**, [**Qwen 2.5: 0.5/1.5B**](https://ollama.com/library/qwen2.5:1.5b), [nemotron-mini 4b](https://ollama.com/library/nemotron-mini) and [llama3.1 8B](https://ollama.com/library/llama3.1) are the recommended models for this project.    
+
 Ensure ollama is installed on your laptop/server and running before running this project. You can install ollama from [here](ollama.com)   
 Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 
@@ -86,7 +88,7 @@ To run the project in Docker, follow the steps below:
 
 NB: You'll need to have deployed ollama elsewhere as an example [here](https://vast.ai/) or [here](https://runpod.io/). Make edits to the app.py file to point to the ollama server. You can use the OpenAI SDK to interact with the ollama server. An example can be found [here](https://github.com/pooyahrtn/RunpodOllama).
 
--linting dockerfile
+- Linting dockerfile
 
 ```bash
 make docker_run_test
@@ -102,6 +104,30 @@ make docker_build
 make docker_run
 ```
 
+## Run in runpod.io
+Make an account if you haven't already. Once that's settled.    
+
+- Click on Deploy under Pods.   
+- Select the cheapest option pod to deploy for example RTX 2000 Ada.    
+- This will create a jupyter lab instance.   
+- Follow the Installation steps in the terminal available. Until the make install.    
+- Run this command. Install ollama and serve it then redirect output to a log file.    
+```bash
+curl -fsSL https://ollama.com/install.sh | sh && ollama serve > ollama.log 2>&1 &
+```
+- Install your preferred model in the same terminal.     
+
+```bash
+ollama run qwen2.5:0.5b
+```
+- Export your credentials    
+```bash
+export AT_API_KEY=yourapikey
+```
+- Continue running the installation steps in the terminal.    
+- Send your first message and airtime with an LLM. 🌠     
+
+Read more about setting up ollama and serveless options <https://blog.runpod.io/run-llama-3-1-405b-with-ollama-a-step-by-step-guide/> & <https://blog.runpod.io/run-llama-3-1-with-vllm-on-runpod-serverless/>    
 
 ## Usage
 This project uses LLMs to send airtime to a phone number. The difference is that we are going to use the Africa's Talking API to send airtime to a phone number using Natural language. Here are examples of prompts you can use to send airtime to a phone number:    
