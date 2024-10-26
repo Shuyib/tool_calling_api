@@ -28,7 +28,7 @@ from importlib.metadata import version
 import asyncio
 import africastalking
 import ollama
-from codecarbon import EmissionsTracker  # Import the EmissionsTracker
+#from codecarbon import EmissionsTracker  # Import the EmissionsTracker
 
 
 # Set up the logger
