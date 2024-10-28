@@ -28,8 +28,9 @@ from importlib.metadata import version
 import asyncio
 import africastalking
 import ollama
-#from codecarbon import EmissionsTracker  # Import the EmissionsTracker
 
+# from codecarbon import EmissionsTracker  # Import the EmissionsTracker
+from duckduckgo_search import DDGS
 
 # Set up the logger
 logger = logging.getLogger(__name__)
@@ -230,6 +231,30 @@ def send_message(phone_number: str, message: str, username: str, **kwargs) -> No
         return json.dumps({"error": str(e)})
 
 
+def search_news(query: str, **kwargs) -> str:
+    """Search for news using DuckDuckGo search engine based on the query provided.
+
+    Parameters
+    ----------
+    query: str : The query to search for.
+
+    Returns
+    -------
+    str : The search results.
+
+    Examples
+    --------
+    search_for_news("Python programming")
+    """
+    logging.info("Searching for news based on the query: %s", query)
+    ddgs = DDGS()
+    results = ddgs.news(
+        keywords=query, region="wt-wt", safesearch="off", timelimit="d", max_results=5
+    )
+    logger.debug("The search results are: %s", results)
+    return json.dumps(results)
+
+
 # Asynchronous function to handle the conversation with the model
 async def run(model: str, user_input: str):
     """Run the conversation with the model.
@@ -295,7 +320,7 @@ async def run(model: str, user_input: str):
                 "type": "function",
                 "function": {
                     "name": "send_message",
-                    "description": "Send a message to a phone number using the Africa's Talking API",  # noqa
+                    "description": "Send a message to a phone number using the Africa's Talking API",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -316,9 +341,30 @@ async def run(model: str, user_input: str):
                     },
                 },
             },
+            {
+                "type": "function",
+                "function": {
+                    "name": "search_news",
+                    "description": "Search for news articles using DuckDuckGo News API",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "The search query for news articles",
+                            },
+                            "max_results": {
+                                "type": "integer",
+                                "description": "The maximum number of news articles to retrieve",
+                                "default": 5,
+                            },
+                        },
+                        "required": ["query"],
+                    },
+                },
+            },
         ],
     )
-
     # Add the model's response to the conversation history
     messages.append(response["message"])
 
@@ -333,6 +379,7 @@ async def run(model: str, user_input: str):
         available_functions = {
             "send_airtime": send_airtime,
             "send_message": send_message,
+            "search_news": search_news,
         }
         for tool in response["message"]["tool_calls"]:
             # Get the function to call based on the tool name
@@ -354,6 +401,13 @@ async def run(model: str, user_input: str):
                 )
                 logger.debug("function response: %s", function_response)
 
+            elif tool["function"]["name"] == "search_news":
+                function_response = function_to_call(
+                    tool["function"]["arguments"]["query"],
+                    max_results=tool["function"]["arguments"].get("max_results", 5),
+                )
+                logger.debug("function response: %s", function_response)
+
             # Add the function response to the conversation history
             messages.append(
                 {
@@ -370,6 +424,7 @@ if __name__ == "__main__":
             "\n Hi, you can send airtime and messages using this interface for example \n\n"
             "Send airtime to +254712345678 with an amount of 10 in currency KES \n\n"
             "Send a message to +254712345678 with the message 'Hello there', using the username 'your_username'\n\n"
+            "You can also search for news by providing a query like 'Python programming'\n\n"
             "=> "
         )
         if not user_prompt:
