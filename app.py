@@ -1,3 +1,24 @@
+"""
+Airtime and Messaging Service using Africa's Talking API
+
+This script provides a Gradio-based web interface for sending airtime and messages
+using the Africa's Talking API. It also tracks the carbon emissions of the operations
+using the CodeCarbon library.
+
+Usage:
+    1. Set the environment variables `AT_USERNAME` and `AT_API_KEY` with your Africa's Talking credentials.
+    2. Run the script: `python app.py`
+    3. Access the Gradio web interface to send airtime or messages or search for news articles.
+
+Example:
+    Send airtime to a phone number:
+        - `Send airtime to +254712345678 with an amount of 10 in currency KES`
+    Send a message to a phone number:
+        - `Send a message to +254712345678 with the message 'Hello there', using the username 'username'`
+    Search for news about a topic:
+        - `Latest news on climate change`
+"""
+
 import os
 import json
 import logging
