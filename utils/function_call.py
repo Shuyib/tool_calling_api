@@ -244,7 +244,7 @@ def search_news(query: str, **kwargs) -> str:
 
     Examples
     --------
-    search_for_news("Python programming")
+    search_news("Python programming")
     """
     logging.info("Searching for news based on the query: %s", query)
     ddgs = DDGS()
