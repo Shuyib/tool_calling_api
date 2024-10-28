@@ -46,7 +46,7 @@ git clone
 ```
 - Change directory to the project directory
 ```bash
-cd Function-calling
+cd tool_calling_api
 ```   
 Create a virtual environment
 ```bash
