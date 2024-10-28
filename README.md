@@ -35,7 +35,7 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 └── utils - This directory contains the utility files for the project.      
     ├── __init__.py - This file initializes the utils directory as a package.    
     ├── function_call.py - This file contains the code to call a function using LLMs.       
-    └── send_airtime.py - This file contains the code to send airtime to a phone number.       
+    └── communication_apis.py - This file contains the code to do with communication apis & experiments.          
     
 ## Installation
 The project uses python 3.12. To install the project, follow the steps below:    
