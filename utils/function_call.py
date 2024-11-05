@@ -249,7 +249,8 @@ def search_news(query: str, **kwargs) -> str:
     logging.info("Searching for news based on the query: %s", query)
     ddgs = DDGS()
     results = ddgs.news(
-        keywords=query, region="wt-wt", safesearch="off", timelimit="d", max_results=5
+        keywords=query, region="wt-wt", safesearch="off", timelimit="d", max_results=5,
+        **kwargs
     )
     logger.debug("The search results are: %s", results)
     return json.dumps(results)
@@ -421,7 +422,7 @@ async def run(model: str, user_input: str):
 if __name__ == "__main__":
     while True:
         user_prompt = input(
-            "\n Hi, you can send airtime and messages using this interface for example \n\n"
+            "\n Hi, this is a 📱 Multi-Service Communication Interface 🌍: you can send airtime and messages using this interface for example \n\n"
             "Send airtime to +254712345678 with an amount of 10 in currency KES \n\n"
             "Send a message to +254712345678 with the message 'Hello there', using the username 'your_username'\n\n"
             "You can also search for news by providing a query like 'Python programming'\n\n"
