@@ -236,7 +236,7 @@ def gradio_interface(message: str, history: list) -> str:
 # Create Gradio interface
 iface = gr.ChatInterface(
     fn=gradio_interface,
-    title="📱 Airtime and Messaging Service 🌍",
+    title="📱 Multi-Service Communication Interface 🌍",
     description=(
         "Welcome to the Airtime and Messaging Service using Africa's Talking API! 🎉\n\n"
         "You can send airtime or messages by typing commands such as:\n"
