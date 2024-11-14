@@ -249,7 +249,11 @@ def search_news(query: str, **kwargs) -> str:
     logging.info("Searching for news based on the query: %s", query)
     ddgs = DDGS()
     results = ddgs.news(
-        keywords=query, region="wt-wt", safesearch="off", timelimit="d", max_results=5,
+        keywords=query,
+        region="wt-wt",
+        safesearch="off",
+        timelimit="d",
+        max_results=5,
         **kwargs
     )
     logger.debug("The search results are: %s", results)
