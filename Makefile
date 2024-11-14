@@ -60,6 +60,7 @@ clean:
 	rm -rf .ipynb_checkpoints
 	rm -rf utils/__pycache__
 	rm -rf utils/*.log
+	rm -rf *.log
 
 lint: activate install format
 	#flake8 or #pylint
