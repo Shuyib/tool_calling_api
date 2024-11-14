@@ -7,5 +7,5 @@ black==24.8.0
 pylint==3.2.6
 pyment==0.3.3
 codecarbon==2.7.1
-gradio==5.4.0
+gradio==5.5.0
 duckduckgo_search==6.3.2
