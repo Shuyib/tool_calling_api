@@ -1,0 +1,41 @@
+# Dockerfile for Ollama API server with Qwen model
+# Build: docker build -t ollama-qwen:0.1 -f Dockerfile.ollama .
+FROM ollama/ollama:0.3.3
+
+# Metadata
+LABEL maintainer="Shuyib" \
+    description="Ollama API server with Qwen model" \
+    version="0.1"
+
+# Add user
+RUN adduser --system --group ollama
+
+# Set workdir
+WORKDIR /app
+
+# Set environment variables
+ENV OLLAMA_HOST=0.0.0.0:11434 \
+    OLLAMA_MODELS=/models \
+    OLLAMA_DEBUG=false \
+    OLLAMA_KEEP_ALIVE=-1 \
+    MODEL=qwen2.5:0.5b
+
+# Create models directory
+RUN mkdir -p /models && \
+    chown -R ollama:ollama /models
+
+# define user
+USER ollama
+
+# Pull model
+RUN ollama serve & sleep 5 && ollama pull $MODEL
+
+# Expose port
+EXPOSE 11434
+
+# Healthcheck: curl localhost:11434/api/version
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:11434/api/version > /dev/null && echo "Ollama is healthy" || exit 1
+
+# Entrypoint: ollama serve
+ENTRYPOINT ["ollama", "serve"]
