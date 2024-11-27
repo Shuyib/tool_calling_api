@@ -4,7 +4,6 @@ pylint==3.2.6
 ipython==8.26.0
 ollama==0.3.3
 black==24.8.0
-pylint==3.2.6
 pyment==0.3.3
 codecarbon==2.7.1
 gradio==5.5.0
