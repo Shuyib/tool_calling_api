@@ -80,19 +80,26 @@ run_gradio: activate install format
 
 docker_build: Dockerfile
 	#build container
-	docker build -t $(DOCKER_IMAGE_TAG) .
+	# docker build -t $(DOCKER_IMAGE_TAG) .
 
-docker_run_test: Dockerfile
+docker_run_test: Dockerfile.app Dockerfile.ollama
 	# linting Dockerfile
-	docker run --rm -i hadolint/hadolint < Dockerfile
+	docker run --rm -i hadolint/hadolint < Dockerfile.ollama
+	docker run --rm -i hadolint/hadolint < Dockerfile.app
+	
 
-docker_clean: Dockerfile
-	# remove dangling images, containers, volumes, networks 
-	docker system prune -a
+docker_clean: Dockerfile.ollama Dockerfile.app
+	# clean docker
+	# remove docker images
+	docker rmi tool_calling_api-ollama -f || true
+	docker rmi tool_calling_api-app -f || true
+	docker system prune -af --volumes
 
-docker_run: Dockerfile docker_build
+
+docker_run: Dockerfile.ollama Dockerfile.app
 	# run docker
 	# this is basically a test to see if a docker image is being created successfully
+	sudo docker-compose up --build
 	
 setup_readme:  ## Create a README.md
 	@if [ ! -f README.md ]; then \
