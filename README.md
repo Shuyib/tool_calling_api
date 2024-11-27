@@ -25,9 +25,12 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 
 ## File structure
 .   
-├── Dockerfile - template to run the project in one shot.    
-├── docker-compose.yml - use the codecarbon project and gradio dashboard.   
-├── app.py - the function_call.py using gradio as the User Interface.  
+├── Dockerfile.app - template to run the gradio dashboard.   
+├── Dockerfile.ollama - template to run the ollama server.       
+├── docker-compose.yml - use the ollama project and gradio dashboard.   
+├── docker-compose-codecarbon.yml - use the codecarbon project, ollama and gradio dashboard.   
+├── .env - This file contains the environment variables for the project. (Not included in the repository)   
+├── app.py - the function_call.py using gradio as the User Interface.    
 ├── Makefile - This file contains the commands to run the project.   
 ├── README.md - This file contains the project documentation. This is the file you are currently reading.       
 ├── requirements.txt - This file contains the dependencies for the project.  
@@ -66,10 +69,12 @@ make -n
 make install
 ```
 - Run the project
+
 ```bash
 make run
 ```
-Long way to run the project
+Long way to run the project   
+
 - Change directory to the utils directory
 ```bash
 cd utils
@@ -94,15 +99,22 @@ NB: You'll need to have deployed ollama elsewhere as an example [here](https://v
 make docker_run_test
 ```
 
-- Build the Docker image
-```bash
-make docker_build
-```
+- Build and run the Docker image
 
-- Run the Docker image
 ```bash
 make docker_run
 ```
+
+Notes:
+-  The .env file contains the environment variables for the project. You can create a .env file and add the following environment variables: 
+
+```bash
+echo "AT_API_KEY = yourapikey" >> .env
+echo "AT_USERNAME = yourusername" >> .env
+```
+- The Dockerfile creates 2 images for the ollama server and the gradio dashboard. The ollama server is running on port 8000 and the gradio dashboard is running on port 7860 . You can access the gradio dashboard by visiting <http://localhost:7860> in your browser & the ollama server by visiting <http://localhost:11434> in your browser. They consume about 2.72GB of RAM.     
+- The docker-compose.yml file is used to run the ollama server and the gradio dashboard. The docker-compose-codecarbon.yml file is used to run the ollama server, the gradio dashboard and the codecarbon project.   
+
 
 ## Run in runpod.io
 Make an account if you haven't already. Once that's settled.    
@@ -112,6 +124,7 @@ Make an account if you haven't already. Once that's settled.
 - This will create a jupyter lab instance.   
 - Follow the Installation steps in the terminal available. Until the make install.    
 - Run this command. Install ollama and serve it then redirect output to a log file.    
+
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh && ollama serve > ollama.log 2>&1 &
 ```
@@ -120,9 +133,11 @@ curl -fsSL https://ollama.com/install.sh | sh && ollama serve > ollama.log 2>&1 
 ```bash
 ollama run qwen2.5:0.5b
 ```
-- Export your credentials    
+- Export your credentials but, if you are using a .env file, you can skip this step. It will be useful for Docker.   
+
 ```bash
 export AT_API_KEY=yourapikey
+export AT_USERNAME=yourusername
 ```
 - Continue running the installation steps in the terminal.    
 - Send your first message and airtime with an LLM. 🌠     
