@@ -1,6 +1,6 @@
 # Dockerfile for Ollama API server with Qwen model
 # Build: docker build -t ollama-qwen:0.1 -f Dockerfile.ollama .
-# credit: DevFest Inference Your LLMs on the fly: Serverless Cloud Run with GPU Acceleration
+# credit: DevFest Pwani 2024 in Kenya. Presentation Inference Your LLMs on the fly: Serverless Cloud Run with GPU Acceleration
 # https://jochen.kirstaetter.name/
 
 FROM ollama/ollama:0.3.3
