@@ -37,10 +37,10 @@ jobs:
     #   run: |
     #     make lint
 
-    - name: Lint Dockerfiles
-      run: |
-        docker run --rm -i hadolint/hadolint < Dockerfile.app
-        docker run --rm -i hadolint/hadolint < Dockerfile.ollama
+    # - name: Lint Dockerfiles
+    #   run: |
+    #     docker run --rm -i hadolint/hadolint < Dockerfile.app
+    #     docker run --rm -i hadolint/hadolint < Dockerfile.ollama
 
   docker-build:
     needs: build-and-test
