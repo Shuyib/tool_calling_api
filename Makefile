@@ -62,7 +62,7 @@ clean:
 	rm -rf utils/*.log
 	rm -rf *.log
 
-lint: activate install format
+lint: activate install 
 	#flake8 or #pylint
 	# In this scenario it'll only tell as errors found in your code
 	# R - refactor 
