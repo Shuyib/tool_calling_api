@@ -43,7 +43,7 @@ docstring: activate
 
 format: activate 
 	# format code
-	black utils/*.py
+	black utils/*.py *.py
 
 clean:
 	# clean directory of cache
@@ -99,7 +99,7 @@ docker_clean: Dockerfile.ollama Dockerfile.app
 docker_run: Dockerfile.ollama Dockerfile.app
 	# run docker
 	# this is basically a test to see if a docker image is being created successfully
-	sudo docker-compose up --build
+	docker-compose up --build
 	
 setup_readme:  ## Create a README.md
 	@if [ ! -f README.md ]; then \
