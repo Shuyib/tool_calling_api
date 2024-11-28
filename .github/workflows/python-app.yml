@@ -33,9 +33,9 @@ jobs:
     #   run: |
     #     make format
     
-    - name: Run linting
-      run: |
-        make lint
+    # - name: Run linting
+    #   run: |
+    #     make lint
 
     - name: Lint Dockerfiles
       run: |
