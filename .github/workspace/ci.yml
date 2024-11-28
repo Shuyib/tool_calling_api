@@ -1,1 +1,59 @@
-template
+name: CI/CD
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        make install
+    
+    - name: Run code formatting check
+      run: |
+        make format
+    
+    - name: Run linting
+      run: |
+        make lint
+
+    - name: Lint Dockerfiles
+      run: |
+        make docker_run_test
+
+  docker-build:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    
+    - name: Build Docker images
+      env:
+        AT_USERNAME: ${{ secrets.AT_USERNAME }}
+        AT_API_KEY: ${{ secrets.AT_API_KEY }}
+      run: |
+        make docker_build
