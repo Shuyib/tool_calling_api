@@ -30,7 +30,7 @@ jobs:
     
     - name: Run code formatting check
       run: |
-        make format
+        black *.py utils/*.py
     
     - name: Run linting
       run: |
