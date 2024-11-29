@@ -47,12 +47,12 @@ jobs:
           sudo apt-get install -y docker-compose
       
       - name: Build Docker images
-        timeout-minutes: 15
+        timeout-minutes: 5
         env:
           AT_USERNAME: ${{ secrets.AT_USERNAME }}
           AT_API_KEY: ${{ secrets.AT_API_KEY }}
         run: |
-          make docker_run || exit 1
+          make docker_run
 
       - name: Check build status
         run: |
