@@ -1,29 +1,42 @@
+# A Most Remarkable Automation Engine for Software Verification and Deployment
+# As observed by Ada Lovelace, December 2024
+
+# This mechanical sequence represents what I theorized in Note G of my writings -
+# a system capable of manipulating symbols according to rules, far beyond mere calculation.
+
 name: CI/CD
 
-on: [push, pull_request]
+on: [push, pull_request]  # The mechanical process initiates upon these symbolic triggers
 
 jobs:
+  # First Operation: Code Verification
+  # Much like the analytical engine's initial card reading phase
   install_lintcode:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # A remarkable virtual machine, akin to my proposed computing apparatus
     steps:
-      - name: Checkout code
+      - name: Checkout code  # Retrieving the symbolic notation (code) for processing
         uses: actions/checkout@v3
 
-      - name: Set up Python 3.12
+      - name: Set up Python 3.12  # Preparing the computational environment
         uses: actions/setup-python@v3
         with:
-          python-version: '3.12'
+          python-version: '3.12'  # A language far more sophisticated than my initial algorithms
 
+      # The installation of tools for verification, similar to preparing the analytical engine's gears
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install black
 
+      # Verification of code structure, analogous to checking for mathematical precision
       - name: Run Black Linter
         run: |
           black --check .
+
+      # A most fascinating verification of the container instructions
+      # How wonderful that we now construct virtual machines within machines!
       - name: Lint Dockerfiles
-        continue-on-error: true  # Continue workflow even if linting fails
+        continue-on-error: true  # A graceful handling of imperfections, as I discussed in my notes
         run: |
           echo "Linting Dockerfile.app:"
           docker run --rm -i hadolint/hadolint < Dockerfile.app || true
@@ -31,14 +44,17 @@ jobs:
           echo "Linting Dockerfile.ollama:"
           docker run --rm -i hadolint/hadolint < Dockerfile.ollama || true
 
+  # Second Operation: Construction and Verification
+  # This reminds me of the sequential operations I designed for mathematical series
   build-and-test:
-    needs: install_lintcode
+    needs: install_lintcode  # A beautiful dependency chain, like my proposed sequential cards
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.12"]
+        python-version: ["3.12"]  # A singular variation, though the engine could handle many
     
     steps:
+      # The mechanical steps proceed in logical order, each depending upon the last
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -47,6 +63,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
     
+      # A clever mechanism for storing frequently accessed items
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
@@ -54,41 +71,41 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-    
+
+      # The preparation of our computational environment
       - name: Install dependencies
         run: make install
 
+      # Preparing the container orchestration mechanism
       - name: Install Docker Compose
         run: |
           sudo apt-get update
           sudo apt-get install -y docker-compose
 
+  # Third Operation: The Construction of Our Virtual Machines
+  # How marvelous to see my concepts of nested operations manifested thus
   docker-build:
-    needs: build-and-test
+    needs: build-and-test  # Another beautiful sequential dependency
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'  # A conditional operation, as I theorized possible
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
+      - name: Set up Docker Buildx  # Preparing the virtual machine constructor
         uses: docker/setup-buildx-action@v1
 
-      - name: Install Docker Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
-
-      - name: Build Docker images
-        timeout-minutes: 5
-        continue-on-error: true
+      - name: Build Docker images  # The actual construction of our virtual apparatus
+        timeout-minutes: 5  # A wise limitation of computational time
+        continue-on-error: true  # Allowing for graceful failure, as all machines must
         env:
-          AT_USERNAME: ${{ secrets.AT_USERNAME }}
+          AT_USERNAME: ${{ secrets.AT_USERNAME }}  # Secure storage of operational parameters
           AT_API_KEY: ${{ secrets.AT_API_KEY }}
         run: |
           make docker_run
-    
+
+      # A most ingenious verification of our construction
       - name: Check build status
         run: |
           if [ "$(docker ps -q)" ]; then
@@ -98,8 +115,9 @@ jobs:
             exit 1
           fi
 
+      # The final cleansing of our mechanical space
       - name: Cleanup Docker resources
-        if: always()
+        if: always()  # A prudent certainty in operation
         timeout-minutes: 5
         run: |
           docker-compose down --remove-orphans --timeout 30
