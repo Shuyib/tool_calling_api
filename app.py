@@ -129,6 +129,7 @@ tools = [
     },
 ]
 
+
 async def process_user_message(message: str, history: list) -> str:
     """
     Handle the conversation with the model asynchronously.
@@ -196,9 +197,7 @@ async def process_user_message(message: str, history: list) -> str:
                 )
             elif tool_name == "search_news":
                 logger.info("Calling search_news with arguments: %s", arguments)
-                function_response = search_news(
-                    arguments["query"]
-                )
+                function_response = search_news(arguments["query"])
             else:
                 function_response = json.dumps({"error": "Unknown function"})
 
@@ -213,6 +212,7 @@ async def process_user_message(message: str, history: list) -> str:
             return f"Function `{tool_name}` executed successfully. Response:\n{function_response}"
     else:
         return model_content
+
 
 def gradio_interface(message: str, history: list) -> str:
     """
@@ -233,6 +233,7 @@ def gradio_interface(message: str, history: list) -> str:
     response = asyncio.run(process_user_message(message, history))
     return response
 
+
 # Create Gradio interface
 iface = gr.ChatInterface(
     fn=gradio_interface,
@@ -247,9 +248,11 @@ iface = gr.ChatInterface(
     ),
     examples=[
         ["Send airtime to +254712345678 with an amount of 10 in currency KES"],
-        ["Send a message to +254712345678 with the message 'Hello there', using the username 'username'"],
+        [
+            "Send a message to +254712345678 with the message 'Hello there', using the username 'username'"
+        ],
         ["Search news for 'latest technology trends'"],
-    ]
+    ],
 )
 
 # Launch the Gradio interface
