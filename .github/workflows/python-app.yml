@@ -28,43 +28,44 @@ jobs:
     
       - name: Install dependencies
         run: make install
-    
-      # Uncomment these steps if you need to run code formatting and linting
-      # - name: Run code formatting check
-      #   run: make format
-    
-      # - name: Run linting
-      #   run: make lint
-
-      # - name: Lint Dockerfiles
-      #   run: |
-      #     docker run --rm -i hadolint/hadolint < Dockerfile.app
-      #     docker run --rm -i hadolint/hadolint < Dockerfile.ollama
 
       - name: Install Docker Compose
         run: |
           sudo apt-get update
           sudo apt-get install -y docker-compose
+
+  docker-build:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     
-      - name: Build and run Docker containers
-        timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      
+      - name: Build Docker images
+        timeout-minutes: 15
         env:
           AT_USERNAME: ${{ secrets.AT_USERNAME }}
           AT_API_KEY: ${{ secrets.AT_API_KEY }}
-        run: make docker_run
-        
-      - name: Force Stop Containers
-        if: always()  # Run even if previous step fails
         run: |
-          docker ps -q | xargs -r docker stop
-          docker ps -aq | xargs -r docker rm
+          make docker_run || exit 1
 
+      - name: Check build status
+        run: |
+          if [ "$(docker ps -q)" ]; then
+            echo "Containers running successfully"
+          else
+            echo "No containers running"
+            exit 1
+          fi
+      
       - name: Cleanup Docker resources
         if: always()
+        timeout-minutes: 5
         run: |
           docker-compose down --remove-orphans --timeout 30
           docker system prune -af --volumes
-          docker container prune -f
-          docker image prune -af
-          docker volume prune -f
-          docker network prune -f
