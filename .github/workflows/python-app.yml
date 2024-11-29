@@ -47,10 +47,24 @@ jobs:
           sudo apt-get install -y docker-compose
     
       - name: Build and run Docker containers
+        timeout-minutes: 5
         env:
           AT_USERNAME: ${{ secrets.AT_USERNAME }}
           AT_API_KEY: ${{ secrets.AT_API_KEY }}
         run: make docker_run
         
+      - name: Force Stop Containers
+        if: always()  # Run even if previous step fails
+        run: |
+          docker ps -q | xargs -r docker stop
+          docker ps -aq | xargs -r docker rm
+
       - name: Cleanup Docker resources
-        run: docker-compose down --remove-orphans
+        if: always()
+        run: |
+          docker-compose down --remove-orphans --timeout 30
+          docker system prune -af --volumes
+          docker container prune -f
+          docker image prune -af
+          docker volume prune -f
+          docker network prune -f
