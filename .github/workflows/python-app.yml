@@ -22,6 +22,14 @@ jobs:
       - name: Run Black Linter
         run: |
           black --check .
+      - name: Lint Dockerfiles
+        continue-on-error: true  # Continue workflow even if linting fails
+        run: |
+          echo "Linting Dockerfile.app:"
+          docker run --rm -i hadolint/hadolint < Dockerfile.app || true
+          echo "-------------------"
+          echo "Linting Dockerfile.ollama:"
+          docker run --rm -i hadolint/hadolint < Dockerfile.ollama || true
 
   build-and-test:
     needs: lint
