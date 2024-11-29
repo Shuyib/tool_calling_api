@@ -58,7 +58,7 @@ jobs:
         AT_USERNAME: ${{ secrets.AT_USERNAME }}
         AT_API_KEY: ${{ secrets.AT_API_KEY }}
       run: |
-        make docker_build
+        make docker_run
     - name: Cleanup Docker resources
       run: |
         docker-compose down --remove-orphans
