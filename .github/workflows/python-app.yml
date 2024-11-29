@@ -76,11 +76,7 @@ jobs:
       - name: Install dependencies
         run: make install
 
-      # Preparing the container orchestration mechanism
-      - name: Install Docker Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
+     
 
   # Third Operation: The Construction of Our Virtual Machines
   # How marvelous to see my concepts of nested operations manifested thus
@@ -95,6 +91,12 @@ jobs:
 
       - name: Set up Docker Buildx  # Preparing the virtual machine constructor
         uses: docker/setup-buildx-action@v1
+
+      # Preparing the container orchestration mechanism
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
 
       - name: Build Docker images  # The actual construction of our virtual apparatus
         timeout-minutes: 5  # A wise limitation of computational time
