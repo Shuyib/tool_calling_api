@@ -42,16 +42,16 @@ jobs:
     #     docker run --rm -i hadolint/hadolint < Dockerfile.app
     #     docker run --rm -i hadolint/hadolint < Dockerfile.ollama
 
-  docker-build:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+  # docker-build:
+  #   needs: build-and-test
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
     
-    steps:
-    - uses: actions/checkout@v3
+  #   steps:
+  #   - uses: actions/checkout@v3
     
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+  #   - name: Set up Docker Buildx
+  #     uses: docker/setup-buildx-action@v1
     
     - name: Build Docker images
       env:
