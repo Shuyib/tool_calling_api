@@ -36,17 +36,17 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 ├── README.md - This file contains the project documentation. This is the file you are currently reading.       
 ├── requirements.txt - This file contains the dependencies for the project.  
 ├── summary.png - How function calling works with a diagram.   
-└── utils - This directory contains the utility files for the project.      
-    ├── __init__.py - This file initializes the utils directory as a package.    
-    ├── function_call.py - This file contains the code to call a function using LLMs.       
-    └── communication_apis.py - This file contains the code to do with communication apis & experiments.          
+└── utils - This directory contains the utility files for the project.       
+    ├── __init__.py - This file initializes the utils directory as a package.     
+    ├── function_call.py - This file contains the code to call a function using LLMs.        
+    └── communication_apis.py - This file contains the code to do with communication apis & experiments.             
     
 ## Installation
 The project uses python 3.12. To install the project, follow the steps below:    
 
 - Clone the repository
 ```bash
-git clone tool_calling_api
+git clone https://github.com/Shuyib/tool_calling_api.git
 ```
 - Change directory to the project directory
 ```bash
@@ -114,7 +114,8 @@ echo "AT_API_KEY = yourapikey" >> .env
 echo "AT_USERNAME = yourusername" >> .env
 ```
 - The Dockerfile creates 2 images for the ollama server and the gradio dashboard. The ollama server is running on port 11434 and the gradio dashboard is running on port 7860 . You can access the gradio dashboard by visiting <http://localhost:7860> in your browser & the ollama server by visiting <http://localhost:11434> in your browser. They consume about 2.72GB of storage in the container.       
-- The docker-compose.yml file is used to run the ollama server and the gradio dashboard. The docker-compose-codecarbon.yml file is used to run the ollama server, the gradio dashboard and the codecarbon project.   
+- The docker-compose.yml file is used to run the ollama server and the gradio dashboard. The docker-compose-codecarbon.yml file is used to run the ollama server, the gradio dashboard and the codecarbon project.
+- You can learn more about how to make this system even more secure. Do this [course](https://www.kaggle.com/learn-guide/5-day-genai#GenAI).     
 
 
 ## Run in runpod.io
