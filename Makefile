@@ -43,7 +43,7 @@ docstring: activate
 
 format: activate 
 	# format code
-	$(PYTHON) black utils/*.py *.py
+	black utils/*.py *.py
 
 clean:
 	# clean directory of cache

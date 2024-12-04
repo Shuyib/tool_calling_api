@@ -133,6 +133,7 @@ tools = [
     },
 ]
 
+
 @with_langtrace_root_span()
 async def process_user_message(message: str, history: list) -> str:
     """
