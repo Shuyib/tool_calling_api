@@ -24,8 +24,12 @@ import json
 import logging
 import asyncio
 import gradio as gr
-from utils.function_call import send_airtime, send_message, search_news
+from langtrace_python_sdk import langtrace, with_langtrace_root_span
 import ollama
+from utils.function_call import send_airtime, send_message, search_news
+
+# langtrace init
+langtrace.init(api_key=os.getenv("LANGTRACE_API_KEY"))
 
 # Set up the logger
 logger = logging.getLogger(__name__)
@@ -129,7 +133,7 @@ tools = [
     },
 ]
 
-
+@with_langtrace_root_span()
 async def process_user_message(message: str, history: list) -> str:
     """
     Handle the conversation with the model asynchronously.
