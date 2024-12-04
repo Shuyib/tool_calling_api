@@ -8,3 +8,5 @@ pyment==0.3.3
 codecarbon==2.7.1
 gradio==5.5.0
 duckduckgo_search==6.3.2
+langtrace-python-sdk==3.3.12
+setuptools==75.6.0
