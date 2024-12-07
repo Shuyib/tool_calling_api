@@ -104,6 +104,7 @@ jobs:
         env:
           AT_USERNAME: ${{ secrets.AT_USERNAME }}  # Secure storage of operational parameters
           AT_API_KEY: ${{ secrets.AT_API_KEY }}
+          LANGTRACE_API_KEY: ${{ secrets.LANGTRACE_API_KEY }}
         run: |
           make docker_run
 
