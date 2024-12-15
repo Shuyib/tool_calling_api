@@ -258,6 +258,7 @@ iface = gr.ChatInterface(
         ],
         ["Search news for 'latest technology trends'"],
     ],
+    type="messages",
 )
 
 # Launch the Gradio interface
