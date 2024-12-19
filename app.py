@@ -57,81 +57,9 @@ logger.info(
 )
 logger.info("Let's review the packages and their versions")
 
+
 # Define tools schema
-tools = [
-    {
-        "type": "function",
-        "function": {
-            "name": "send_airtime",
-            "description": "Send airtime to a phone number using the Africa's Talking API",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "phone_number": {
-                        "type": "string",
-                        "description": "The phone number in international format",
-                    },
-                    "currency_code": {
-                        "type": "string",
-                        "description": "The 3-letter ISO currency code",
-                    },
-                    "amount": {
-                        "type": "string",
-                        "description": "The amount of airtime to send",
-                    },
-                },
-                "required": ["phone_number", "currency_code", "amount"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "send_message",
-            "description": "Send a message to a phone number using the Africa's Talking API",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "phone_number": {
-                        "type": "string",
-                        "description": "The phone number in international format",
-                    },
-                    "message": {
-                        "type": "string",
-                        "description": "The message to send",
-                    },
-                    "username": {
-                        "type": "string",
-                        "description": "The username for the Africa's Talking account",
-                    },
-                },
-                "required": ["phone_number", "message", "username"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "search_news",
-            "description": "Search for news articles using DuckDuckGo News API",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {
-                        "type": "string",
-                        "description": "The search query for news articles",
-                    },
-                    "max_results": {
-                        "type": "integer",
-                        "description": "The maximum number of news articles to retrieve",
-                        "default": 5,
-                    },
-                },
-                "required": ["query"],
-            },
-        },
-    },
-]
+tools = [send_airtime, send_message, search_news]
 
 
 @with_langtrace_root_span()
@@ -180,29 +108,22 @@ async def process_user_message(message: str, history: list) -> str:
     )
     logger.debug("Model response: %s", response["message"])
 
+    available_functions = {
+        'add_two_numbers': add_two_numbers,
+        'send_airtime': send_airtime,
+        'send_message': send_message,
+        'search_news': search_news,
+    }
+
     if model_message.get("tool_calls"):
         for tool in model_message["tool_calls"]:
             tool_name = tool["function"]["name"]
             arguments = tool["function"]["arguments"]
             logger.info("Tool call detected: %s", tool_name)
 
-            if tool_name == "send_airtime":
-                logger.info("Calling send_airtime with arguments: %s", arguments)
-                function_response = send_airtime(
-                    arguments["phone_number"],
-                    arguments["currency_code"],
-                    arguments["amount"],
-                )
-            elif tool_name == "send_message":
-                logger.info("Calling send_message with arguments: %s", arguments)
-                function_response = send_message(
-                    arguments["phone_number"],
-                    arguments["message"],
-                    arguments["username"],
-                )
-            elif tool_name == "search_news":
-                logger.info("Calling search_news with arguments: %s", arguments)
-                function_response = search_news(arguments["query"])
+            function_to_call = available_functions.get(tool_name)
+            if function_to_call:
+                function_response = function_to_call(**arguments)
             else:
                 function_response = json.dumps({"error": "Unknown function"})
 
