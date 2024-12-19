@@ -109,10 +109,9 @@ async def process_user_message(message: str, history: list) -> str:
     logger.debug("Model response: %s", response["message"])
 
     available_functions = {
-        'add_two_numbers': add_two_numbers,
-        'send_airtime': send_airtime,
-        'send_message': send_message,
-        'search_news': search_news,
+        "send_airtime": send_airtime,
+        "send_message": send_message,
+        "search_news": search_news,
     }
 
     if model_message.get("tool_calls"):
