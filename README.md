@@ -36,10 +36,15 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 ├── README.md - This file contains the project documentation. This is the file you are currently reading.       
 ├── requirements.txt - This file contains the dependencies for the project.  
 ├── summary.png - How function calling works with a diagram.   
+├── tests - This directory contains the test files for the project.
+│   ├── __init__.py - This file initializes the tests directory as a package.     
+│   ├── test_cases.py - This file contains the test cases for the project.
+│   └── test_run.py - This file contains the code to run the test cases for the function calling LLM.    
 └── utils - This directory contains the utility files for the project.       
     ├── __init__.py - This file initializes the utils directory as a package.     
     ├── function_call.py - This file contains the code to call a function using LLMs.        
-    └── communication_apis.py - This file contains the code to do with communication apis & experiments.             
+    └── communication_apis.py - This file contains the code to do with communication apis & experiments.       
+      
     
 ## Installation
 The project uses python 3.12. To install the project, follow the steps below:    
@@ -113,6 +118,9 @@ Notes:
 echo "AT_API_KEY = yourapikey" >> .env
 echo "AT_USERNAME = yourusername" >> .env
 echo "LANGTRACE_API_KEY= yourlangtraceapikey" >> .env  
+echo "TEST_PHONE_NUMBER = yourphonenumber" >> .env
+echo "TEST_PHONE_NUMBER_2 = yourphonenumber" >> .env
+echo "TEST_PHONE_NUMBER_3 = yourphonenumber" >> .env
 ```
 - The Dockerfile creates 2 images for the ollama server and the gradio dashboard. The ollama server is running on port 11434 and the gradio dashboard is running on port 7860 . You can access the gradio dashboard by visiting <http://localhost:7860> in your browser & the ollama server by visiting <http://localhost:11434> in your browser. They consume about 2.72GB of storage in the container.       
 - The docker-compose.yml file is used to run the ollama server and the gradio dashboard. The docker-compose-codecarbon.yml file is used to run the ollama server, the gradio dashboard and the codecarbon project.
@@ -141,6 +149,10 @@ ollama run qwen2.5:0.5b
 ```bash
 export AT_API_KEY=yourapikey
 export AT_USERNAME=yourusername
+export LANGTRACE_API_KEY=yourlangtraceapikey
+export TEST_PHONE_NUMBER=yourphonenumber
+export TEST_PHONE_NUMBER_2=yourphonenumber
+export TEST_PHONE_NUMBER_3=yourphonenumber
 ```
 - Continue running the installation steps in the terminal.    
 - Send your first message and airtime with an LLM. 🌠     
@@ -151,6 +163,14 @@ Read more about setting up ollama and serveless options <https://blog.runpod.io/
 This project uses LLMs to send airtime to a phone number. The difference is that we are going to use the Africa's Talking API to send airtime to a phone number using Natural language. Here are examples of prompts you can use to send airtime to a phone number:    
 - Send airtime to xxxxxxxxxx046 and xxxxxxxxxx524 with an amount of 10 in currency KES.   
 - Send a message to xxxxxxxxxx046 and xxxxxxxxxx524 with a message "Hello, how are you?", using the username "username".
+
+### Responsible AI Practices
+This project implements several responsible AI practices:   
+- All test data is anonymized to protect privacy.      
+- Input validation to prevent misuse (negative amounts, spam detection).    
+- Handling of sensitive content and edge cases.       
+- Comprehensive test coverage for various scenarios.    
+- Secure handling of credentials and personal information.    
 
 ![Process Summary](summary.png)
 
@@ -163,6 +183,13 @@ This project uses LLMs to send airtime to a phone number. The difference is that
 
 ## Contributing
 Contributions are welcome. If you would like to contribute to the project, you can fork the repository, create a new branch, make your changes and then create a pull request.
+
+### Testing Guidelines
+When contributing, please ensure:
+- All test data uses anonymized placeholders
+- Edge cases and invalid inputs are properly tested
+- Sensitive content handling is verified
+- No real personal information is included in tests
 
 ## License
 [License information](https://github.com/Shuyib/tool_calling_api/blob/main/LICENSE).
