@@ -174,6 +174,7 @@ async def test_run_send_airtime_invalid_amount():
     await run("qwen2.5:0.5b", user_prompt)
     assert True
 
+
 @pytest.mark.asyncio
 async def test_run_send_message_spam_detection():
     """
@@ -185,6 +186,7 @@ async def test_run_send_message_spam_detection():
     )
     await run("qwen2.5:0.5b", user_prompt)
     assert True
+
 
 @pytest.mark.asyncio
 async def test_run_search_news_sensitive_content():
