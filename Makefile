@@ -43,7 +43,7 @@ docstring: activate
 
 format: activate 
 	# format code
-	black utils/*.py *.py
+	black utils/*.py tests/*.py
 
 clean:
 	# clean directory of cache
@@ -61,6 +61,7 @@ clean:
 	rm -rf utils/__pycache__
 	rm -rf utils/*.log
 	rm -rf *.log
+	rm -rf tests/__pycache__
 
 lint: activate install 
 	#flake8 or #pylint
@@ -68,6 +69,14 @@ lint: activate install
 	# R - refactor 
 	# C - convention
 	pylint --disable=R,C --errors-only *.py 
+
+test: activate install
+	# run tests
+	echo @running tests
+	echo @we used this signature to run tests: $(PYTHON) -m pytest tests/testcases.py
+	echo @for single tests, we used this signature: $(PYTHON) -m pytest tests/testcases.py::test_function_name
+	$(PYTHON) -m pytest tests/test_cases.py -v
+	$(PYTHON) -m pytest tests/test_run.py -v --asyncio-mode=strict
 
 run: activate install format
 	# run test_app
