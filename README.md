@@ -36,10 +36,10 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 ├── README.md - This file contains the project documentation. This is the file you are currently reading.       
 ├── requirements.txt - This file contains the dependencies for the project.  
 ├── summary.png - How function calling works with a diagram.   
-├── tests - This directory contains the test files for the project.
+├── tests - This directory contains the test files for the project.    
 │   ├── __init__.py - This file initializes the tests directory as a package.     
-│   ├── test_cases.py - This file contains the test cases for the project.
-│   └── test_run.py - This file contains the code to run the test cases for the function calling LLM.    
+│   ├── test_cases.py - This file contains the test cases for the project.   
+│   └── test_run.py - This file contains the code to run the test cases for the function calling LLM.      
 └── utils - This directory contains the utility files for the project.       
     ├── __init__.py - This file initializes the utils directory as a package.     
     ├── function_call.py - This file contains the code to call a function using LLMs.        
