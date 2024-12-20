@@ -10,3 +10,5 @@ gradio==5.7.1
 duckduckgo_search==6.3.2
 langtrace-python-sdk==3.3.14
 setuptools==75.6.0
+pytest==8.3.4
+pytest-asyncio==0.25.0
