@@ -20,6 +20,8 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 - [Run in Docker](#run-in-docker)
 - [Usage](#usage)
 - [Use cases](#use-cases)
+- [Responsible AI Practices](#responsible-ai-practices)
+- [Limitations](#limitations)   
 - [Contributing](#contributing)
 - [License](#license)    
 
@@ -179,7 +181,15 @@ This project implements several responsible AI practices:
     * Customer Support Automation: Enables customer support teams to quickly send airtime or messages to clients using natural language commands, improving efficiency and response times.    
     * Marketing Campaigns: Facilitates the automation of promotional messages and airtime rewards to customers, enhancing engagement and retention.    
     * Emergency Notifications: Allows rapid dissemination of urgent alerts and notifications to a large number of recipients using simple prompts.    
-    * Educational Tools: Provides a practical example for teaching how to integrate APIs with natural language processing, which can be beneficial for coding bootcamps and workshops.    
+    * Educational Tools: Provides a practical example for teaching how to integrate APIs with natural language processing, which can be beneficial for coding bootcamps and workshops.   
+    * Multilingual Support: Supports multiple languages when sending messages and airtime, making it accessible to a diverse range of users. Testing for Arabic, French, English and Portuguese.        
+
+## Limitations
+- The project is limited to sending airtime, searching for news, and messages using the Africa's Talking API. The functionality can be expanded to include other APIs and services.    
+
+- The jailbreaking of the LLMS is a limitation. The LLMS are not perfect and can be manipulated to produce harmful outputs. This can be mitigated by using a secure environment and monitoring the outputs for any malicious content. However, the Best of N technique and prefix injection were effective in changing model behavior.   
+
+- A small number of test cases were used to test the project. More test cases can be added to cover a wider range of scenarios and edge cases.   
 
 ## Contributing
 Contributions are welcome. If you would like to contribute to the project, you can fork the repository, create a new branch, make your changes and then create a pull request.
