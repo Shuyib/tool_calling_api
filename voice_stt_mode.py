@@ -69,7 +69,9 @@ logger.propagate = False
 formatter = logging.Formatter("%(asctime)s:%(name)s:%(levelname)s:%(message)s")
 
 # Set up the file handler for logging to a file
-file_handler = RotatingFileHandler("voice_stt_mode.log", maxBytes=5*1024*1024, backupCount=5)
+file_handler = RotatingFileHandler(
+    "voice_stt_mode.log", maxBytes=5 * 1024 * 1024, backupCount=5
+)
 file_handler.setLevel(logging.INFO)  # Capture INFO and above in the file
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
@@ -88,14 +90,23 @@ logger.info(
     "Starting the voice&text function calling script to send airtime and messages using the "
     "Africa's Talking API"
 )
+logger.info("Review GROQ Speech-to-Text if they log the audio data or not")
 logger.info("Let's review the packages and their versions")
 
 # ------------------------------------------------------------------------------------
 # Log Versions of the Libraries
 # ------------------------------------------------------------------------------------
 
-pkgs = ["africastalking", "ollama", "duckduckgo_search", "langtrace-python-sdk",
-        "gradio", "groq", "soundfile", "numpy"]
+pkgs = [
+    "africastalking",
+    "ollama",
+    "duckduckgo_search",
+    "langtrace-python-sdk",
+    "gradio",
+    "groq",
+    "soundfile",
+    "numpy",
+]
 
 for pkg in pkgs:
     try:
@@ -189,6 +200,7 @@ tools = [
 # Function Definitions
 # ------------------------------------------------------------------------------------
 
+
 @with_langtrace_root_span()
 async def process_user_message(message: str, history: list) -> str:
     """
@@ -276,7 +288,11 @@ async def process_user_message(message: str, history: list) -> str:
                 )
 
                 return f"Function `{tool_name}` executed successfully. Response:\n{function_response}"
-            except (send_airtime.ErrorType, send_message.ErrorType, search_news.ErrorType) as e:
+            except (
+                send_airtime.ErrorType,
+                send_message.ErrorType,
+                search_news.ErrorType,
+            ) as e:
                 logger.error("Handled error in tool `%s`: %s", tool_name, e)
                 return f"Error executing `{tool_name}`: {str(e)}"
             except Exception as e:  # pylint: disable=broad-exception-caught
@@ -322,7 +338,7 @@ async def process_audio_and_llm(audio):
 
         # Write audio to buffer
         buffer = io.BytesIO()
-        sf.write(buffer, y, sr, format='wav')
+        sf.write(buffer, y, sr, format="wav")
         buffer.seek(0)
 
         try:
@@ -331,7 +347,7 @@ async def process_audio_and_llm(audio):
             transcription = groq_client.audio.transcriptions.create(
                 model="distil-whisper-large-v3-en",
                 file=("audio.wav", buffer),
-                response_format="text"
+                response_format="text",
             )
 
             # Process transcription with LLM
@@ -380,7 +396,8 @@ with gr.Blocks(title="🎙️ Voice Command Communication Interface 🌍") as de
     # Add tabs for voice and text input
     with gr.Tab("Voice Input"):
         # How to use
-        gr.Markdown("""
+        gr.Markdown(
+            """
 This interface allows you to send airtime, messages, and search
 for news articles using voice commands.
 You can also type your commands in the text input tab.
@@ -389,23 +406,23 @@ Here are some examples of commands you can use:
 - Send a message to +254712345678 with the message 'Hello there' with
                 the username 'add your username'💬
 - Search news for 'latest technology trends' 📰
-                Please speak clearly and concisely for accurate transcription. In English only for now.
-You can also edit the transcription before processing. We all make mistakes! 🤗
-""")
+* Please speak clearly and concisely for accurate transcription. In English only for now.
+* You can also edit the transcription before processing. We all make mistakes! 🤗
+"""
+        )
         audio_input = gr.Audio(
             sources=["microphone", "upload"],
             type="numpy",
             label="Speak your command",
-            streaming=False
+            streaming=False,
         )
         transcription_preview = gr.Textbox(
             label="Preview Transcription (Edit if needed)",
             interactive=True,
-            placeholder="Transcription will appear here first..."
+            placeholder="Transcription will appear here first...",
         )
         audio_output = gr.Textbox(
-            label="Final Result",
-            placeholder="LLM response will appear here..."
+            label="Final Result", placeholder="LLM response will appear here..."
         )
         with gr.Row():
             transcribe_button = gr.Button("Transcribe")
@@ -442,14 +459,14 @@ You can also edit the transcription before processing. We all make mistakes! �
 
                 # Write audio to buffer
                 buffer = io.BytesIO()
-                sf.write(buffer, y, sr, format='wav')
+                sf.write(buffer, y, sr, format="wav")
                 buffer.seek(0)
 
                 # Get transcription from Groq
                 transcription = groq_client.audio.transcriptions.create(
                     model="distil-whisper-large-v3-en",
                     file=("audio.wav", buffer),
-                    response_format="text"
+                    response_format="text",
                 )
                 logger.info("Audio transcribed successfully: %s", transcription)
                 return transcription
@@ -459,16 +476,14 @@ You can also edit the transcription before processing. We all make mistakes! �
 
         # Wire up the components
         transcribe_button.click(
-            fn=show_transcription,
-            inputs=audio_input,
-            outputs=transcription_preview
+            fn=show_transcription, inputs=audio_input, outputs=transcription_preview
         )
 
         # Process the edited text
         process_button.click(
             fn=lambda x: asyncio.run(process_user_message(x, [])),
             inputs=transcription_preview,
-            outputs=audio_output
+            outputs=audio_output,
         )
 
     # Text input tab

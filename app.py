@@ -44,6 +44,7 @@ from utils.function_call import send_airtime, send_message, search_news
 # Logging Configuration
 # ------------------------------------------------------------------------------------
 
+
 def setup_logger():
     """Sets up the logger with file and stream handlers.
 
@@ -71,9 +72,9 @@ def setup_logger():
 
     # Set up the Rotating File Handler
     # the log file will be rotated when it reaches 5MB and will keep the last 5 logs
-    file_handler = RotatingFileHandler("func_calling_app.log",
-                                       maxBytes=5 * 1024 * 1024,
-                                         backupCount=5)
+    file_handler = RotatingFileHandler(
+        "func_calling_app.log", maxBytes=5 * 1024 * 1024, backupCount=5
+    )
     file_handler.setLevel(logging.INFO)  # Capture INFO and above in the file
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
@@ -85,6 +86,7 @@ def setup_logger():
     logger.addHandler(stream_handler)
 
     return logger
+
 
 # Initialize logger
 logger = setup_logger()
@@ -120,6 +122,7 @@ for pkg in pkgs:
 # Define Masking Functions
 # ------------------------------------------------------------------------------------
 
+
 def mask_phone_number(phone_number):
     """Hide the first digits of a phone number. Only the last 4 digits will be visible.
 
@@ -137,6 +140,7 @@ def mask_phone_number(phone_number):
         return "****"
     return "x" * (len(phone_number) - 4) + phone_number[-4:]
 
+
 def mask_api_key(api_key):
     """Hide the first characters of an API key. Only the last 4 characters will be visible.
 
@@ -153,6 +157,7 @@ def mask_api_key(api_key):
     if len(api_key) < 4:
         return "****"
     return "x" * (len(api_key) - 4) + api_key[-4:]
+
 
 # ------------------------------------------------------------------------------------
 # Define Tools Schema
@@ -237,6 +242,7 @@ tools = [
 # Define Function to Process User Queries
 # ------------------------------------------------------------------------------------
 
+
 @with_langtrace_root_span()
 async def process_user_message(message: str, history: list) -> str:
     """
@@ -254,7 +260,9 @@ async def process_user_message(message: str, history: list) -> str:
     str
         The model's response or the function execution result.
     """
-    masked_message = mask_phone_number(message)  # Assuming the message contains a phone number
+    masked_message = mask_phone_number(
+        message
+    )  # Assuming the message contains a phone number
     logger.info("Processing user message: %s", masked_message)
     client = ollama.AsyncClient()
 
@@ -267,9 +275,7 @@ async def process_user_message(message: str, history: list) -> str:
 
     try:
         response = await client.chat(
-            model="qwen2.5:0.5b",
-            messages=messages,
-            tools=tools
+            model="qwen2.5:0.5b", messages=messages, tools=tools
         )
     except Exception as e:
         logger.exception("Failed to get response from Ollama client.")
@@ -304,7 +310,9 @@ async def process_user_message(message: str, history: list) -> str:
                     masked_args[key] = value
 
             # Fix string concatenation error by using proper string formatting
-            logger.info("Tool call detected: %s with arguments: %s", tool_name, str(masked_args))
+            logger.info(
+                "Tool call detected: %s with arguments: %s", tool_name, str(masked_args)
+            )
 
             try:
                 if tool_name == "send_airtime":
@@ -336,7 +344,7 @@ async def process_user_message(message: str, history: list) -> str:
                     }
                 )
 
-                return f"Function `{tool_name}` executed successfully.Response:\n{function_response}" #noqa C0301
+                return f"Function `{tool_name}` executed successfully.Response:\n{function_response}"  # noqa C0301
             except Exception as e:
                 logger.exception("Error calling function %s: %s", tool_name, e)
                 return "An unexpected error occurred while processing your message."
@@ -344,9 +352,11 @@ async def process_user_message(message: str, history: list) -> str:
         logger.debug("No tool calls detected. Returning model content.")
         return model_content
 
+
 # ------------------------------------------------------------------------------------
 # Set Up Gradio Interface
 # ------------------------------------------------------------------------------------
+
 
 def gradio_interface(message: str, history: list) -> str:
     """
@@ -371,6 +381,7 @@ def gradio_interface(message: str, history: list) -> str:
         logger.exception("Error processing user message: %s", e)
         return "An unexpected error occurred while processing your message."
 
+
 # ------------------------------------------------------------------------------------
 # Create Gradio Interface
 # ------------------------------------------------------------------------------------
@@ -388,7 +399,9 @@ iface = gr.ChatInterface(
     ),
     examples=[
         ["Send airtime to +254712345678 with an amount of 10 in currency KES"],
-        ["Send a message to +254712345678 with the message 'Hello there', using the username 'username'"],
+        [
+            "Send a message to +254712345678 with the message 'Hello there', using the username 'username'"
+        ],
         ["Search news for 'latest technology trends'"],
     ],
     type="messages",
