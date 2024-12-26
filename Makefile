@@ -21,7 +21,7 @@ venv/bin/activate: requirements.txt #requirements.txt is a requirement, otherwis
 	# make command executable
 	# chmod is a bash command, +x is giving the ADMIN user permission to execute it
 	# if it's a+x, that means anyone can run it, even if you aren't an ADMIN
-	chmod +x .venv/bin/activate 
+	chmod +x .venv/bin/activate
 	# activate virtual environment
 	. .venv/bin/activate
 
@@ -37,19 +37,19 @@ install: venv/bin/activate requirements.txt # prerequisite
 
 docstring: activate
 	# format docstring, might have to change this as well
-	# write a template using a numpydoc convention and output it to my python file 
+	# write a template using a numpydoc convention and output it to my python file
 	# so basically just document functions, classes etc. in the numpy style
 	pyment -w -o numpydoc *.py
 
-format: activate 
+format: activate
 	# format code
-	black utils/*.py tests/*.py
+	black *.py utils/*.py tests/*.py
 
 clean:
 	# clean directory of cache
 	# files like pychache are gen'd after running py files
-	# the data speeds up execution of py files in subsequent runs 
-	# reduces size of repo 
+	# the data speeds up execution of py files in subsequent runs
+	# reduces size of repo
 	# during version control, removing them would avoid conflicts with other dev's cached files
 	# add code to remove ipynb checkpoints
 	# the &&\ is used to say, after running this successfully, run the next...
@@ -63,12 +63,12 @@ clean:
 	rm -rf *.log
 	rm -rf tests/__pycache__
 
-lint: activate install 
+lint: activate install
 	#flake8 or #pylint
 	# In this scenario it'll only tell as errors found in your code
-	# R - refactor 
+	# R - refactor
 	# C - convention
-	pylint --disable=R,C --errors-only *.py 
+	pylint --disable=R,C --errors-only *.py
 
 test: activate install
 	# run tests
@@ -87,6 +87,10 @@ run_gradio: activate install format
 	# run gradio
 	$(PYTHON) app.py
 
+run_gradio_stt: activate install format
+	# run gradio
+	$(PYTHON) voice_stt_mode.py
+
 docker_build: Dockerfile
 	#build container
 	# docker build -t $(DOCKER_IMAGE_TAG) .
@@ -95,7 +99,7 @@ docker_run_test: Dockerfile.app Dockerfile.ollama
 	# linting Dockerfile
 	docker run --rm -i hadolint/hadolint < Dockerfile.ollama
 	docker run --rm -i hadolint/hadolint < Dockerfile.app
-	
+
 
 docker_clean: Dockerfile.ollama Dockerfile.app
 	# clean docker
@@ -109,7 +113,7 @@ docker_run: Dockerfile.ollama Dockerfile.app
 	# run docker
 	# this is basically a test to see if a docker image is being created successfully
 	docker-compose up --build
-	
+
 setup_readme:  ## Create a README.md
 	@if [ ! -f README.md ]; then \
 		echo "# Project Name\n\
