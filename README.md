@@ -47,7 +47,8 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
     ├── __init__.py - This file initializes the utils directory as a package.     
     ├── function_call.py - This file contains the code to call a function using LLMs.        
     └── communication_apis.py - This file contains the code to do with communication apis & experiments.       
-## attribution
+
+### attribution
 This project uses the Qwen2.5-0.5B model developed by Alibaba Cloud under the Apache License 2.0. The original project can be found at [Qwen technical report](https://arxiv.org/abs/2412.15115)    
 
 ### License
