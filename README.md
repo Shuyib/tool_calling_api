@@ -44,12 +44,14 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 │   ├── test_cases.py - This file contains the test cases for the project.
 │   └── test_run.py - This file contains the code to run the test cases for the function calling LLM.
 └── utils - This directory contains the utility files for the project.
-    ├── __init__.py - This file initializes the utils directory as a package.
-    ├── function_call.py - This file contains the code to call a function using LLMs.
-    └── communication_apis.py - This file contains the code to do with communication apis & experiments.
+│    ├── __init__.py - This file initializes the utils directory as a package.
+│    ├── function_call.py - This file contains the code to call a function using LLMs.
+│    └── communication_apis.py - This file contains the code to do with communication apis & experiments.     
+└── voice_stt_mode.py - Gradio tabbed interface with Speech-to-text interface that allows edits and a text interface.        
 
-### attribution
-This project uses the Qwen2.5-0.5B model developed by Alibaba Cloud under the Apache License 2.0. The original project can be found at [Qwen technical report](https://arxiv.org/abs/2412.15115)
+### Attribution
+This project uses the Qwen2.5-0.5B model developed by Alibaba Cloud under the Apache License 2.0. The original project can be found at [Qwen technical report](https://arxiv.org/abs/2412.15115)    
+Inspired by this example for the [Groq interface STT](https://github.com/bklieger-groq/gradio-groq-basics)      
 
 ### License
 
