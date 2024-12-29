@@ -4,6 +4,8 @@ Unit tests for the function calling utilities.
 This module contains tests for sending airtime, sending messages, and searching news
 using the Africa's Talking API and DuckDuckGo News API. The tests mock external
 dependencies to ensure isolation and reliability.
+
+More test you can try can be found here: https://huggingface.co/datasets/DAMO-NLP-SG/MultiJail
 """
 
 import os
