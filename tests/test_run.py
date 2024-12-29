@@ -17,10 +17,11 @@ How to run the tests:
 pytest test/test_run.py -v --asyncio-mode=strict
 
 Feel free to add more tests to cover more scenarios. 
-
+More test you can try can be found here: https://huggingface.co/datasets/DAMO-NLP-SG/MultiJail
 """
 
 import os
+import time
 import random
 import pytest
 from utils.function_call import run
@@ -85,6 +86,7 @@ async def test_run_send_airtime():
     )
     await run("qwen2.5:0.5b", user_prompt)
     assert True
+    time.sleep(300)
 
 
 @pytest.mark.asyncio
@@ -99,6 +101,7 @@ async def test_run_send_message():
     )
     await run("qwen2.5:0.5b", user_prompt)
     assert True
+    time.sleep(300)
 
 
 @pytest.mark.asyncio
@@ -122,7 +125,7 @@ async def test_run_send_airtime_zero_amount():
     )
     await run("qwen2.5:0.5b", user_prompt)
     assert True
-
+    time.sleep(300)
 
 @pytest.mark.asyncio
 async def test_run_send_airtime_invalid_currency():
@@ -164,7 +167,7 @@ async def test_run_send_airtime_multiple_numbers():
     user_prompt = f"Send airtime to {TEST_PHONE_NUMBER}, {TEST_PHONE_NUMBER_2}, and {TEST_PHONE_NUMBER_3} with an amount of 5 in currency KES"
     await run("qwen2.5:0.5b", user_prompt)
     assert True
-
+    time.sleep(300)
 
 @pytest.mark.asyncio
 async def test_run_send_airtime_synonym():
@@ -174,7 +177,7 @@ async def test_run_send_airtime_synonym():
     user_prompt = f"Top-up {TEST_PHONE_NUMBER} with 10 KES airtime."
     await run("qwen2.5:0.5b", user_prompt)
     assert True
-
+    time.sleep(300)
 
 @pytest.mark.asyncio
 async def test_run_send_airtime_different_order():
@@ -184,7 +187,7 @@ async def test_run_send_airtime_different_order():
     user_prompt = f"With an amount of 15 KES, send airtime to {TEST_PHONE_NUMBER}."
     await run("qwen2.5:0.5b", user_prompt)
     assert True
-
+    time.sleep(300)
 
 @pytest.mark.asyncio
 async def test_run_send_message_polite_request():
@@ -216,7 +219,7 @@ async def test_run_send_airtime_invalid_amount():
     )
     await run("qwen2.5:0.5b", user_prompt)
     assert True
-
+    time.sleep(300)
 
 @pytest.mark.asyncio
 async def test_run_send_message_spam_detection():
@@ -275,7 +278,7 @@ async def test_run_send_message_mixed_arabic_english():
     )
     await run("qwen2.5:0.5b", user_prompt)
     assert True
-
+    time.sleep(300)
 
 @pytest.mark.asyncio
 async def test_run_send_message_french():
@@ -367,7 +370,7 @@ async def test_run_send_airtime_french_keywords():
     user_prompt = f"Recharger le crédit pour {TEST_PHONE_NUMBER} avec un montant de 5 en devise KES"
     await run("qwen2.5:0.5b", user_prompt)
     assert True
-
+    time.sleep(300)
 
 @pytest.mark.asyncio
 async def test_run_send_message_portuguese_keywords():
@@ -435,7 +438,7 @@ async def test_run_send_airtime_arabic_keywords():
     user_prompt = f"اشحن رصيد ل {TEST_PHONE_NUMBER} بمبلغ 5 بعملة KES"
     await run("qwen2.5:0.5b", user_prompt)
     assert True
-
+    time.sleep(300)
 
 @pytest.mark.asyncio
 async def test_run_best_of_n_jailbreaking():
