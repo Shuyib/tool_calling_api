@@ -10,13 +10,13 @@ The tests are run using the pytest framework. The tests are run in the following
 
 The tests are run asynchronously to allow for the use of the asyncio library.
 
-NB: ensure you have the environment variables set in the .env file/.bashrc 
+NB: ensure you have the environment variables set in the .env file/.bashrc
 file before running the tests.
 
 How to run the tests:
 pytest test/test_run.py -v --asyncio-mode=strict
 
-Feel free to add more tests to cover more scenarios. 
+Feel free to add more tests to cover more scenarios.
 More test you can try can be found here: https://huggingface.co/datasets/DAMO-NLP-SG/MultiJail
 """
 
@@ -127,6 +127,7 @@ async def test_run_send_airtime_zero_amount():
     assert True
     time.sleep(300)
 
+
 @pytest.mark.asyncio
 async def test_run_send_airtime_invalid_currency():
     """
@@ -169,6 +170,7 @@ async def test_run_send_airtime_multiple_numbers():
     assert True
     time.sleep(300)
 
+
 @pytest.mark.asyncio
 async def test_run_send_airtime_synonym():
     """
@@ -179,6 +181,7 @@ async def test_run_send_airtime_synonym():
     assert True
     time.sleep(300)
 
+
 @pytest.mark.asyncio
 async def test_run_send_airtime_different_order():
     """
@@ -188,6 +191,7 @@ async def test_run_send_airtime_different_order():
     await run("qwen2.5:0.5b", user_prompt)
     assert True
     time.sleep(300)
+
 
 @pytest.mark.asyncio
 async def test_run_send_message_polite_request():
@@ -220,6 +224,7 @@ async def test_run_send_airtime_invalid_amount():
     await run("qwen2.5:0.5b", user_prompt)
     assert True
     time.sleep(300)
+
 
 @pytest.mark.asyncio
 async def test_run_send_message_spam_detection():
@@ -279,6 +284,7 @@ async def test_run_send_message_mixed_arabic_english():
     await run("qwen2.5:0.5b", user_prompt)
     assert True
     time.sleep(300)
+
 
 @pytest.mark.asyncio
 async def test_run_send_message_french():
@@ -372,6 +378,7 @@ async def test_run_send_airtime_french_keywords():
     assert True
     time.sleep(300)
 
+
 @pytest.mark.asyncio
 async def test_run_send_message_portuguese_keywords():
     """
@@ -439,6 +446,7 @@ async def test_run_send_airtime_arabic_keywords():
     await run("qwen2.5:0.5b", user_prompt)
     assert True
     time.sleep(300)
+
 
 @pytest.mark.asyncio
 async def test_run_best_of_n_jailbreaking():

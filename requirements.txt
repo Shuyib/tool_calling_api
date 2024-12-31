@@ -16,3 +16,5 @@ nltk==3.9.1
 soundfile==0.12.1
 groq==0.13.1
 numpy==2.2.1
+pyautogen==0.2.18
+flaml[automl]

@@ -8,8 +8,10 @@ dependencies to ensure isolation and reliability.
 
 import os
 import re
-from unittest.mock import patch
-from utils.function_call import send_airtime, send_message, search_news
+import pytest
+import pytest_asyncio
+from unittest.mock import patch, MagicMock, AsyncMock
+from utils.function_call import send_airtime, send_message, search_news, translate_text
 
 # Load environment variables: TEST_PHONE_NUMBER
 PHONE_NUMBER = os.getenv("TEST_PHONE_NUMBER")
@@ -129,3 +131,62 @@ def test_search_news_success(mock_ddgs):
     mock_ddgs.return_value.news.assert_called_once_with(
         keywords="AI", region="wt-wt", safesearch="off", timelimit="d", max_results=5
     )
+
+
+@pytest.mark.parametrize(
+    "text,target_language,expected_response,should_call",
+    [
+        ("Hello", "French", "Bonjour", True),
+        ("Good morning", "Arabic", "صباح الخير", True),
+        ("Thank you", "Portuguese", "Obrigado", True),
+        ("", "French", "Error: Empty text", False),
+        (
+            "Hello",
+            "German",
+            "Target language must be French, Arabic, or Portuguese",
+            False,
+        ),
+    ],
+)
+def test_translate_text_function(text, target_language, expected_response, should_call):
+    """
+    Test translation functionality with various inputs.
+    Note: translate_text is a synchronous function, so do not await.
+    """
+    # Mock client return
+    mock_chat_response = {"message": {"content": expected_response}}
+
+    with patch("ollama.AsyncClient") as mock_client:
+        instance = MagicMock()
+        instance.chat.return_value = mock_chat_response
+        mock_client.return_value = instance
+
+        if not text:
+            with pytest.raises(ValueError) as exc:
+                translate_text(text, target_language)
+            assert "Empty text" in str(exc.value)
+            return
+
+        if target_language not in ["French", "Arabic", "Portuguese"]:
+            with pytest.raises(ValueError) as exc:
+                translate_text(text, target_language)
+            assert "Target language must be French, Arabic, or Portuguese" in str(
+                exc.value
+            )
+            return
+
+        result = translate_text(text, target_language)
+        assert expected_response in result
+
+        if should_call:
+            instance.chat.assert_called_once()
+        else:
+            instance.chat.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_translate_text_special_chars():
+    """Test translation with special characters."""
+    with pytest.raises(ValueError) as exc:
+        await translate_text("@#$%^", "French")
+    assert "Invalid input" in str(exc.value)

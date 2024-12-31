@@ -20,6 +20,7 @@ Example:
         using the username 'username'`
     Search for news about a topic:
         - `Latest news on climate change`
+        - `Translate the text 'Hello' to the target language 'French'`
 """
 
 # ------------------------------------------------------------------------------------
@@ -38,7 +39,7 @@ from importlib.metadata import version, PackageNotFoundError
 import gradio as gr
 from langtrace_python_sdk import langtrace, with_langtrace_root_span
 import ollama
-from utils.function_call import send_airtime, send_message, search_news
+from utils.function_call import send_airtime, send_message, search_news, translate_text
 
 # ------------------------------------------------------------------------------------
 # Logging Configuration
@@ -236,6 +237,27 @@ tools = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "translate_text",
+            "description": "Translate text to a specified language using Ollama & ",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "text": {
+                        "type": "string",
+                        "description": "The text to translate",
+                    },
+                    "target_language": {
+                        "type": "string",
+                        "description": "The target language for translation",
+                    },
+                },
+                "required": ["text", "target_language"],
+            },
+        },
+    },
 ]
 
 # ------------------------------------------------------------------------------------
@@ -244,7 +266,9 @@ tools = [
 
 
 @with_langtrace_root_span()
-async def process_user_message(message: str, history: list) -> str:
+async def process_user_message(
+    message: str, history: list, use_vision: bool = False, image_path: str = None
+) -> str:
     """
     Handle the conversation with the model asynchronously.
 
@@ -254,6 +278,10 @@ async def process_user_message(message: str, history: list) -> str:
         The user's input message.
     history : list of list of str
         The conversation history up to that point.
+    use_vision : bool, optional
+        Flag to enable vision capabilities, by default False
+    image_path : str, optional
+        Path to the image file if using vision model, by default None
 
     Returns
     -------
@@ -266,16 +294,28 @@ async def process_user_message(message: str, history: list) -> str:
     logger.info("Processing user message: %s", masked_message)
     client = ollama.AsyncClient()
 
-    messages = [
-        {
-            "role": "user",
-            "content": message,
-        }
-    ]
+    messages = []
+
+    # Construct message based on vision flag
+    if use_vision:
+        messages.append(
+            {
+                "role": "user",
+                "content": message,
+                "images": [image_path] if image_path else None,
+            }
+        )
+    else:
+        messages.append({"role": "user", "content": message})
 
     try:
+        # Select model based on vision flag
+        model_name = "llama3.2-vision" if use_vision else "qwen2.5:0.5b"
+
         response = await client.chat(
-            model="qwen2.5:0.5b", messages=messages, tools=tools
+            model=model_name,
+            messages=messages,
+            tools=None if use_vision else tools,  # Vision models don't use tools
         )
     except Exception as e:
         logger.exception("Failed to get response from Ollama client.")
@@ -292,7 +332,6 @@ async def process_user_message(message: str, history: list) -> str:
             "content": model_content,
         }
     )
-    logger.debug("Model messages: %s", messages)
 
     if model_message.get("tool_calls"):
         for tool in model_message["tool_calls"]:
@@ -332,6 +371,14 @@ async def process_user_message(message: str, history: list) -> str:
                 elif tool_name == "search_news":
                     logger.info("Calling search_news with arguments: %s", masked_args)
                     function_response = search_news(arguments["query"])
+                elif tool_name == "translate_text":
+                    logger.info(
+                        "Calling translate_text with arguments: %s", masked_args
+                    )
+                    function_response = translate_text(
+                        arguments["text"],
+                        arguments["target_language"],
+                    )
                 else:
                     function_response = json.dumps({"error": "Unknown function"})
                     logger.warning("Unknown function: %s", tool_name)
@@ -403,6 +450,7 @@ iface = gr.ChatInterface(
             "Send a message to +254712345678 with the message 'Hello there', using the username 'username'"
         ],
         ["Search news for 'latest technology trends'"],
+        ["Translate the text 'Hi' to the target language 'French'"],
     ],
     type="messages",
 )

@@ -47,7 +47,7 @@ import soundfile as sf
 import ollama
 
 # Local Module Imports
-from utils.function_call import send_airtime, send_message, search_news
+from utils.function_call import send_airtime, send_message, search_news, translate_text
 
 # ------------------------------------------------------------------------------------
 # Logging Configuration
@@ -194,6 +194,27 @@ tools = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "translate_text",
+            "description": "Translate text to a specified language using Ollama",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "text": {
+                        "type": "string",
+                        "description": "The text to translate",
+                    },
+                    "target_language": {
+                        "type": "string",
+                        "description": "The target language for translation",
+                    },
+                },
+                "required": ["text", "target_language"],
+            },
+        },
+    },
 ]
 
 # ------------------------------------------------------------------------------------
@@ -275,6 +296,12 @@ async def process_user_message(message: str, history: list) -> str:
                 elif tool_name == "search_news":
                     logger.info("Calling search_news with arguments: %s", arguments)
                     function_response = search_news(arguments["query"])
+                elif tool_name == "translate_text":
+                    logger.info("Calling translate_text with arguments: %s", arguments)
+                    function_response = translate_text(
+                        arguments["text"],
+                        arguments["target_language"],
+                    )
                 else:
                     function_response = json.dumps({"error": "Unknown function"})
                     logger.warning("Unknown function called: %s", tool_name)
@@ -292,6 +319,7 @@ async def process_user_message(message: str, history: list) -> str:
                 send_airtime.ErrorType,
                 send_message.ErrorType,
                 search_news.ErrorType,
+                translate_text.ErrorType,
             ) as e:
                 logger.error("Handled error in tool `%s`: %s", tool_name, e)
                 return f"Error executing `{tool_name}`: {str(e)}"
@@ -337,7 +365,6 @@ async def process_audio_and_llm(audio):
         y /= np.max(np.abs(y))
 
         # Write audio to buffer
-        buffer = io.BytesIO()
         sf.write(buffer, y, sr, format="wav")
         buffer.seek(0)
 
@@ -406,6 +433,7 @@ Here are some examples of commands you can use:
 - Send a message to +254712345678 with the message 'Hello there' with
                 the username 'add your username'💬
 - Search news for 'latest technology trends' 📰
+- Translate the text "Hi" to the target language "French"
 * Please speak clearly and concisely for accurate transcription. In English only for now.
 * You can also edit the transcription before processing. We all make mistakes! 🤗
 """

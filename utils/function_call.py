@@ -1,19 +1,19 @@
 """
-Function calling example using ollama to send airtime to a phone number 
+Function calling example using ollama to send airtime to a phone number
 using the Africa's Talking API.
 
-The user provides a query like 
+The user provides a query like
 "Send airtime to +254712345678 with an amount of 10 in currency KES",
-and the model decides to use the `send_airtime` function to send 
+and the model decides to use the `send_airtime` function to send
 airtime to the provided phone number.
 
-The user can also provide a query like 
-"Send a message to +254712345678 with the message 
+The user can also provide a query like
+"Send a message to +254712345678 with the message
 'Hello there', using the username 'username'",
-and the model decides to use the `send_message` 
+and the model decides to use the `send_message`
 function to send a message to the provided phone number.
 
-Credentials for the Africa's Talking API are loaded from 
+Credentials for the Africa's Talking API are loaded from
 environment variables `AT_USERNAME` and `AT_API_KEY`.
 
 Credit: https://www.youtube.com/watch?v=i0tsVzRbsNU
@@ -28,6 +28,7 @@ from importlib.metadata import version
 import asyncio
 import africastalking
 import ollama
+from autogen import ConversableAgent
 
 # from codecarbon import EmissionsTracker  # Import the EmissionsTracker
 from duckduckgo_search import DDGS
@@ -254,10 +255,58 @@ def search_news(query: str, **kwargs) -> str:
         safesearch="off",
         timelimit="d",
         max_results=5,
-        **kwargs
+        **kwargs,
     )
     logger.debug("The search results are: %s", results)
     return json.dumps(results)
+
+
+def translate_text(text: str, target_language: str) -> str:
+    """Translate text to a specified language using Ollama & Autogen.
+
+    Parameters
+    ----------
+    text : str : The text to translate.
+
+
+    """
+    if target_language.lower() not in ["french", "arabic", "portuguese"]:
+        raise ValueError("Target language must be French, Arabic, or Portuguese.")
+
+    config = [
+        {
+            "base_url": "http://localhost:11434/v1",
+            "model": "qwen2.5:0.5b",
+            "api_key": "ollama",
+            "api_type": "ollama",
+            "temperature": 0.5,
+        }
+    ]
+
+    zoe = ConversableAgent(
+        "Zoe",
+        system_message="""You are a translation expert.
+Translate English text to the specified language with high accuracy.
+Provide only the translation without explanations.""",
+        llm_config={"config_list": config},
+        human_input_mode="NEVER",
+    )
+
+    joe = ConversableAgent(
+        "joe",
+        system_message="""You are a bilingual translation validator.
+Review translations for:
+1. Accuracy of meaning
+2. Grammar correctness
+3. Natural expression
+Provide a confidence score (0-100%) and brief feedback.""",
+        llm_config={"config_list": config},
+        human_input_mode="NEVER",
+    )
+
+    message = f"Zoe, translate '{text}' to {target_language.capitalize()}"
+    result = joe.initiate_chat(zoe, message=message, max_turns=2)
+    return result
 
 
 # Asynchronous function to handle the conversation with the model
@@ -368,6 +417,27 @@ async def run(model: str, user_input: str):
                     },
                 },
             },
+            {
+                "type": "function",
+                "function": {
+                    "name": "translate_text",
+                    "description": "Translate text to a specified language using Ollama & Autogen",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "description": "The text to translate",
+                            },
+                            "target_language": {
+                                "type": "string",
+                                "description": "The target language for translation",
+                            },
+                        },
+                        "required": ["text", "target_language"],
+                    },
+                },
+            },
         ],
     )
     # Add the model's response to the conversation history
@@ -385,6 +455,7 @@ async def run(model: str, user_input: str):
             "send_airtime": send_airtime,
             "send_message": send_message,
             "search_news": search_news,
+            "translate_text": translate_text,
         }
         for tool in response["message"]["tool_calls"]:
             # Get the function to call based on the tool name
@@ -410,6 +481,13 @@ async def run(model: str, user_input: str):
                 function_response = function_to_call(
                     tool["function"]["arguments"]["query"],
                     max_results=tool["function"]["arguments"].get("max_results", 5),
+                )
+                logger.debug("function response: %s", function_response)
+
+            elif tool["function"]["name"] == "translate_text":
+                function_response = function_to_call(
+                    tool["function"]["arguments"]["text"],
+                    tool["function"]["arguments"]["target_language"],
                 )
                 logger.debug("function response: %s", function_response)
 

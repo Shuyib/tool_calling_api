@@ -28,30 +28,34 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 
 
 ## File structure
-.    
-├── Dockerfile.app - template to run the gradio dashboard.    
-├── Dockerfile.ollama - template to run the ollama server.   
-├── docker-compose.yml - use the ollama project and gradio dashboard.    
-├── docker-compose-codecarbon.yml - use the codecarbon project, ollama and gradio dashboard.    
-├── .env - This file contains the environment variables for the project. (Not included in the repository)    
-├── app.py - the function_call.py using gradio as the User Interface.    
-├── Makefile - This file contains the commands to run the project.   
-├── README.md - This file contains the project documentation. This is the file you are currently reading.    
-├── requirements.txt - This file contains the dependencies for the project.    
-├── summary.png - How function calling works with a diagram.    
-├── tests - This directory contains the test files for the project.    
-│   ├── __init__.py - This file initializes the tests directory as a package.    
-│   ├── test_cases.py - This file contains the test cases for the project.    
-│   └── test_run.py - This file contains the code to run the test cases for the function calling LLM.    
-└── utils - This directory contains the utility files for the project.    
-│    ├── __init__.py - This file initializes the utils directory as a package.    
-│    ├── function_call.py - This file contains the code to call a function using LLMs.    
-│    └── communication_apis.py - This file contains the code to do with communication apis & experiments.      
-└── voice_stt_mode.py - Gradio tabbed interface with Speech-to-text interface that allows edits and a text interface.        
+.
+├── Dockerfile.app - template to run the gradio dashboard.
+├── Dockerfile.ollama - template to run the ollama server.
+├── docker-compose.yml - use the ollama project and gradio dashboard.
+├── docker-compose-codecarbon.yml - use the codecarbon project, ollama and gradio dashboard.
+├── .env - This file contains the environment variables for the project. (Not included in the repository)
+├── app.py - the function_call.py using gradio as the User Interface.
+├── Makefile - This file contains the commands to run the project.
+├── README.md - This file contains the project documentation. This is the file you are currently reading.
+├── requirements.txt - This file contains the dependencies for the project.
+├── summary.png - How function calling works with a diagram.
+├── tests - This directory contains the test files for the project.
+│   ├── __init__.py - This file initializes the tests directory as a package.
+│   ├── test_cases.py - This file contains the test cases for the project.
+│   └── test_run.py - This file contains the code to run the test cases for the function calling LLM.
+└── utils - This directory contains the utility files for the project.
+│    ├── __init__.py - This file initializes the utils directory as a package.
+│    ├── function_call.py - This file contains the code to call a function using LLMs.
+│    └── communication_apis.py - This file contains the code to do with communication apis & experiments.
+└── voice_stt_mode.py - Gradio tabbed interface with Speech-to-text interface that allows edits and a text interface.
 
 ### Attribution
-This project uses the Qwen2.5-0.5B model developed by Alibaba Cloud under the Apache License 2.0. The original project can be found at [Qwen technical report](https://arxiv.org/abs/2412.15115)    
-Inspired by this example for the [Groq interface STT](https://github.com/bklieger-groq/gradio-groq-basics)      
+* This project uses the Qwen2.5-0.5B model developed by Alibaba Cloud under the Apache License 2.0. The original project can be found at [Qwen technical report](https://arxiv.org/abs/2412.15115)
+* Inspired by this example for the [Groq interface STT](https://github.com/bklieger-groq/gradio-groq-basics)
+* Microsoft Autogen was used to simulate multistep interactions. The original project can be found at [Microsoft Autogen](https://github.com/microsoft/autogen)
+* The project uses the Africa's Talking API to send airtime and messages to a phone numbers. The original project can be found at [Africa's Talking API](https://africastalking.com/)
+* Ollama for model serving and deployment. The original project can be found at [Ollama](https://ollama.com/)
+
 
 ### License
 
@@ -181,6 +185,7 @@ This project uses LLMs to send airtime to a phone number. The difference is that
 - The app now supports both Text and Voice input tabs.
 - In the Voice Input tab, record audio and click "Transcribe" to preview the transcription. Then click "Process Edited Text" to execute voice commands.
 - In the Text Input tab, directly type commands to send airtime or messages or to search news.
+- An autogen agent has been added to assist with generating translations to other languages. Note that this uses an evaluator-optimizer model and may not always provide accurate translations. However, this paradigm can be used for code generation, summarization, and other tasks.
 
 ### Responsible AI Practices
 This project implements several responsible AI practices:
