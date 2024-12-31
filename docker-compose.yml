@@ -32,6 +32,7 @@ services:
       - AT_USERNAME=${AT_USERNAME}
       - AT_API_KEY=${AT_API_KEY}
       - LANGTRACE_API_KEY=${LANGTRACE_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
       - OLLAMA_HOST=http://ollama:11434
     # Expose port 7860 for the Gradio web interface
     ports:
