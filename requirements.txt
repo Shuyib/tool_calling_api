@@ -18,3 +18,4 @@ groq==0.13.1
 numpy==2.2.1
 pyautogen==0.2.18
 flaml[automl]
+edge-tts==7.0.0
