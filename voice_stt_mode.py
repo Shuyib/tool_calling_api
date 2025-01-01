@@ -1,5 +1,5 @@
 """
-Airtime and Messaging Service using Africa's Talking API
+Airtime and Messaging Servicea using Africa's Talking API
 
 This script provides a Gradio-based web interface for sending airtime and messages
 using the Africa's Talking API. It also tracks the carbon emissions of the operations
@@ -37,6 +37,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import asyncio
 from importlib.metadata import version, PackageNotFoundError
+import tempfile
 
 # Third-Party Library Imports
 import gradio as gr
@@ -45,6 +46,7 @@ import groq
 import numpy as np
 import soundfile as sf
 import ollama
+import edge_tts
 
 # Local Module Imports
 from utils.function_call import send_airtime, send_message, search_news, translate_text
@@ -59,7 +61,6 @@ from utils.constants import VISION_SYSTEM_PROMPT, API_SYSTEM_PROMPT
 # Initialize Langtrace
 langtrace.init(api_key=os.getenv("LANGTRACE_API_KEY"))
 groq_client = groq.Client(api_key=os.getenv("GROQ_API_KEY"))
-
 
 # Set up the logger
 logger = logging.getLogger(__name__)
@@ -109,6 +110,7 @@ pkgs = [
     "groq",
     "soundfile",
     "numpy",
+    "edge-tts",  # Add edge-tts to version checking
 ]
 
 for pkg in pkgs:
@@ -119,6 +121,24 @@ for pkg in pkgs:
         logger.error("Package %s is not installed.", pkg)
     except Exception as e:
         logger.error("Failed to retrieve version for %s: %s", pkg, str(e))
+
+# ------------------------------------------------------------------------------------
+# Add TTS Configuration after version checking
+# ------------------------------------------------------------------------------------
+
+VOICE = "sw-TZ-RehemaNeural"
+OUTPUT_FILE = "tts_output.mp3"  # Saved in current working directory
+
+
+async def text_to_speech(text: str) -> None:
+    try:
+        communicate = edge_tts.Communicate(text, VOICE)
+        await communicate.save(OUTPUT_FILE)
+        logger.info(f"Generated speech output: {OUTPUT_FILE}")
+    except Exception as e:
+        logger.error(f"TTS Error: {str(e)}")
+        raise
+
 
 # ------------------------------------------------------------------------------------
 # Define Tools Schema
@@ -384,12 +404,12 @@ async def process_audio_and_llm(audio):
         y /= np.max(np.abs(y))
 
         # Write audio to buffer
+        buffer = io.BytesIO()
         sf.write(buffer, y, sr, format="wav")
         buffer.seek(0)
 
         try:
             # Get transcription from Groq
-            # add the import here then text will be cut out for the client
             transcription = groq_client.audio.transcriptions.create(
                 model="distil-whisper-large-v3-en",
                 file=("audio.wav", buffer),
@@ -471,6 +491,9 @@ Here are some examples of commands you can use:
         audio_output = gr.Textbox(
             label="Final Result", placeholder="LLM response will appear here..."
         )
+        tts_button = gr.Button("Play TTS")
+        tts_audio = gr.Audio(label="TTS Output")
+
         with gr.Row():
             transcribe_button = gr.Button("Transcribe")
             process_button = gr.Button("Process Edited Text", variant="primary")
@@ -521,6 +544,20 @@ Here are some examples of commands you can use:
                 logger.exception("Error during transcription: %s", e)
                 return f"Error: {str(e)}"
 
+        # Define TTS Function
+        async def generate_tts(text: str) -> str:
+            """
+            Generate TTS audio and return the file path.
+            """
+            try:
+                communicate = edge_tts.Communicate(text, VOICE)
+                await communicate.save(OUTPUT_FILE)
+                logger.info(f"TTS audio generated successfully: {OUTPUT_FILE}")
+                return OUTPUT_FILE
+            except Exception as e:
+                logger.error(f"TTS Generation Error: {str(e)}")
+                return None
+
         # Wire up the components
         transcribe_button.click(
             fn=show_transcription, inputs=audio_input, outputs=transcription_preview
@@ -531,6 +568,13 @@ Here are some examples of commands you can use:
             fn=lambda x: asyncio.run(process_user_message(x, [])),
             inputs=transcription_preview,
             outputs=audio_output,
+        )
+
+        # Connect TTS Button to Function
+        tts_button.click(
+            fn=lambda txt: asyncio.run(generate_tts(txt)),
+            inputs=audio_output,  # Replace with the component holding the final text
+            outputs=tts_audio,
         )
 
     # Text input tab
@@ -551,15 +595,26 @@ Here are some examples of commands you can use:
         scan_button = gr.Button("Scan Receipt")
         result_text = gr.Textbox(label="Analysis Result")
 
-        scan_button.click(
-            fn=lambda img: asyncio.run(
-                process_user_message(
-                    "Analyze this receipt", [], use_vision=True, image_path=img
+        async def process_with_speech(image):
+            try:
+                # Get text result first
+                text_result = await process_user_message(
+                    "Analyze this receipt", [], use_vision=True, image_path=image
                 )
-            ),
+                return text_result
+            except Exception as e:
+                logger.error(f"Processing error: {str(e)}")
+                return str(e)
+
+        scan_button.click(
+            fn=lambda img: asyncio.run(process_with_speech(img)),
             inputs=image_input,
             outputs=result_text,
         )
+
+# ------------------------------------------------------------------------------------
+# Launch Gradio Interface
+# ------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     try:
