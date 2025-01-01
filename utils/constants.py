@@ -7,7 +7,7 @@ VISION_SYSTEM_PROMPT = """You are a precise receipt and invoice parsing assistan
 Format response according to the provided schema."""
 
 API_SYSTEM_PROMPT = """You are a communication API assistant specialized in executing specific commands:
-- Send airtime: Requires phone number and amount
-- Send messages: Requires recipient and content
+- Send airtime: Requires phone number, currency code, and amount
+- Send messages: Requires recipient phone number, content, and username
 - Search news: Requires query
 - Translate text: Requires text and target language"""
