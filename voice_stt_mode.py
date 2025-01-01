@@ -48,6 +48,9 @@ import ollama
 
 # Local Module Imports
 from utils.function_call import send_airtime, send_message, search_news, translate_text
+from typing import Optional
+from utils.models import ReceiptData, LineItem
+from utils.constants import VISION_SYSTEM_PROMPT, API_SYSTEM_PROMPT
 
 # ------------------------------------------------------------------------------------
 # Logging Configuration
@@ -223,7 +226,12 @@ tools = [
 
 
 @with_langtrace_root_span()
-async def process_user_message(message: str, history: list) -> str:
+async def process_user_message(
+    message: str,
+    history: list,
+    use_vision: bool = False,
+    image_path: Optional[str] = None,
+) -> str:
     """
     Handle the conversation with the model asynchronously.
 
@@ -233,6 +241,10 @@ async def process_user_message(message: str, history: list) -> str:
         The user's input message.
     history : list of list of str
         The conversation history up to that point.
+    use_vision : bool, optional
+        Whether to use vision model for processing (default is False).
+    image_path : str, optional
+        Path to the image file for vision model (default is None).
 
     Returns
     -------
@@ -241,19 +253,26 @@ async def process_user_message(message: str, history: list) -> str:
     """
     logger.info("Processing user message: %s", message)
     client = ollama.AsyncClient()
+    messages = []
 
-    messages = [
-        {
-            "role": "user",
-            "content": message,
-        }
-    ]
+    # Add system prompt
+    system_prompt = VISION_SYSTEM_PROMPT if use_vision else API_SYSTEM_PROMPT
+    messages.append({"role": "system", "content": system_prompt})
+
+    # Add user message with image if present
+    if use_vision and image_path:
+        messages.append({"role": "user", "content": message, "images": [image_path]})
+    else:
+        messages.append({"role": "user", "content": message})
 
     try:
+        model_name = "llama3.2-vision" if use_vision else "qwen2.5:0.5b"
         response = await client.chat(
-            model="qwen2.5:0.5b",
+            model=model_name,
             messages=messages,
-            tools=tools,
+            tools=None if use_vision else tools,
+            format=ReceiptData.model_json_schema() if use_vision else None,
+            options={"temperature": 0},
         )
     except Exception as e:
         logger.exception("Failed to get response from Ollama client.")
@@ -417,7 +436,7 @@ def gradio_interface(message: str, history: list) -> str:
 # Create Gradio Interface with Both Text and Audio Inputs
 # ------------------------------------------------------------------------------------
 
-with gr.Blocks(title="🎙️ Voice Command Communication Interface 🌍") as demo:
+with gr.Blocks(title="🎙️ Voice & Vision Communication Interface 🌍") as demo:
     gr.Markdown("# Voice Command & Text Communication Interface")
 
     # Add tabs for voice and text input
@@ -525,6 +544,21 @@ Here are some examples of commands you can use:
                 "- Search news for 'latest technology trends' 📰"
             ),
             type="messages",
+        )
+
+    with gr.Tab("Receipt Scanner"):
+        image_input = gr.Image(type="filepath", label="Upload Receipt/Invoice")
+        scan_button = gr.Button("Scan Receipt")
+        result_text = gr.Textbox(label="Analysis Result")
+
+        scan_button.click(
+            fn=lambda img: asyncio.run(
+                process_user_message(
+                    "Analyze this receipt", [], use_vision=True, image_path=img
+                )
+            ),
+            inputs=image_input,
+            outputs=result_text,
         )
 
 if __name__ == "__main__":

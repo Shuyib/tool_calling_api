@@ -40,6 +40,8 @@ import gradio as gr
 from langtrace_python_sdk import langtrace, with_langtrace_root_span
 import ollama
 from utils.function_call import send_airtime, send_message, search_news, translate_text
+from utils.constants import VISION_SYSTEM_PROMPT, API_SYSTEM_PROMPT
+from utils.models import ReceiptData, LineItem
 
 # ------------------------------------------------------------------------------------
 # Logging Configuration
@@ -296,6 +298,9 @@ async def process_user_message(
 
     messages = []
 
+    # Set the system prompt based on the vision flag
+    system_prompt = VISION_SYSTEM_PROMPT if use_vision else API_SYSTEM_PROMPT
+
     # Construct message based on vision flag
     if use_vision:
         messages.append(
@@ -306,6 +311,7 @@ async def process_user_message(
             }
         )
     else:
+        messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": message})
 
     try:
@@ -316,6 +322,9 @@ async def process_user_message(
             model=model_name,
             messages=messages,
             tools=None if use_vision else tools,  # Vision models don't use tools
+            options={
+                "temperature": 0
+            },  # Set temperature to 0 for deterministic responses
         )
     except Exception as e:
         logger.exception("Failed to get response from Ollama client.")
@@ -442,6 +451,8 @@ iface = gr.ChatInterface(
         "- `Send airtime to +254712345678 with an amount of 10 in currency KES` 📞\n"
         "- `Send a message to +254712345678 with the message 'Hello there', using the username 'username'` 💬\n"
         "- `Search news for 'latest technology trends'` 📰\n\n"
+        "You can also translate text to a target language by typing:\n"
+        "- `Translate the text 'Hi' to the target language 'French'` 🌐\n\n"
         "Please enter your command below to get started. 🚀"
     ),
     examples=[
