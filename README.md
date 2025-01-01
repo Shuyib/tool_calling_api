@@ -55,10 +55,10 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 * This project uses the Qwen2.5-0.5B model developed by Alibaba Cloud under the Apache License 2.0. The original project can be found at [Qwen technical report](https://arxiv.org/abs/2412.15115)
 * Inspired by this example for the [Groq interface STT](https://github.com/bklieger-groq/gradio-groq-basics)
 * Microsoft Autogen was used to simulate multistep interactions. The original project can be found at [Microsoft Autogen](https://github.com/microsoft/autogen)
-* The project uses the Africa's Talking API to send airtime and messages to a phone numbers. Check them out on this website [Africa's Talking API](https://africastalking.com/)
+* The project uses the Africa's Talking API to send airtime and messages to phone numbers. Check them out on this website [Africa's Talking API](https://africastalking.com/)
 * Ollama for model serving and deployment. The original project can be found at [Ollama](https://ollama.com/)
 * The project uses the Gradio library to create a user interface for the function calling LLM. The original project can be found at [Gradio](https://gradio.app/)
-* The Text-to-Speech interface uses Edge TTS by Microsoft. The original project can be found at [Edge TTS](https://github.com/rany2/edge-tts). The voice chosen is Rehema which is a Swahili voice from Tanzania.
+* The Text-to-Speech interface uses Edge TTS by Microsoft. The original project can be found at [Edge TTS](https://github.com/rany2/edge-tts). The voice chosen is Rehema which is a voice from Tanzania.
 
 
 ### License
