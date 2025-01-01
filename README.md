@@ -29,27 +29,27 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 
 ## File structure
 .
-├── Dockerfile.app - template to run the gradio dashboard.
-├── Dockerfile.ollama - template to run the ollama server.
-├── docker-compose.yml - use the ollama project and gradio dashboard.
-├── docker-compose-codecarbon.yml - use the codecarbon project, ollama and gradio dashboard.
-├── .env - This file contains the environment variables for the project. (Not included in the repository)
-├── app.py - the function_call.py using gradio as the User Interface.
-├── Makefile - This file contains the commands to run the project.
-├── README.md - This file contains the project documentation. This is the file you are currently reading.
-├── requirements.txt - This file contains the dependencies for the project.
-├── summary.png - How function calling works with a diagram.
-├── tests - This directory contains the test files for the project.
-│   ├── __init__.py - This file initializes the tests directory as a package.
-│   ├── test_cases.py - This file contains the test cases for the project.
-│   └── test_run.py - This file contains the code to run the test cases for the function calling LLM.
-└── utils - This directory contains the utility files for the project.
-│    ├── __init__.py - This file initializes the utils directory as a package.
-│    ├── function_call.py - This file contains the code to call a function using LLMs.
-│    └── communication_apis.py - This file contains the code to do with communication apis & experiments.
-|    └── models.py - This file contains pydantic schemas for vision models.
-|    └── constants.py - This file contains system prompts to adjust the model's behavior.
-└── voice_stt_mode.py - Gradio tabbed interface with Speech-to-text interface that allows edits and a text interface.
+├── Dockerfile.app - template to run the gradio dashboard.   
+├── Dockerfile.ollama - template to run the ollama server.   
+├── docker-compose.yml - use the ollama project and gradio dashboard.   
+├── docker-compose-codecarbon.yml - use the codecarbon project, ollama and gradio dashboard.   
+├── .env - This file contains the environment variables for the project. (Not included in the repository)   
+├── app.py - the function_call.py using gradio as the User Interface.   
+├── Makefile - This file contains the commands to run the project.   
+├── README.md - This file contains the project documentation. This is the file you are currently reading.   
+├── requirements.txt - This file contains the dependencies for the project.   
+├── summary.png - How function calling works with a diagram.   
+├── tests - This directory contains the test files for the project.   
+│   ├── __init__.py - This file initializes the tests directory as a package.      
+│   ├── test_cases.py - This file contains the test cases for the project.   
+│   └── test_run.py - This file contains the code to run the test cases for the function calling LLM.   
+└── utils - This directory contains the utility files for the project.   
+│    ├── __init__.py - This file initializes the utils directory as a package.   
+│    ├── function_call.py - This file contains the code to call a function using LLMs.   
+│    └── communication_apis.py - This file contains the code to do with communication apis & experiments.   
+|    └── models.py - This file contains pydantic schemas for vision models.   
+|    └── constants.py - This file contains system prompts to adjust the model's behavior.   
+└── voice_stt_mode.py - Gradio tabbed interface with Speech-to-text interface that allows edits and a text interface.   
 
 ### Attribution
 * This project uses the Qwen2.5-0.5B model developed by Alibaba Cloud under the Apache License 2.0. The original project can be found at [Qwen technical report](https://arxiv.org/abs/2412.15115)
