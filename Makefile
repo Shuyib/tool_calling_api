@@ -62,6 +62,8 @@ clean:
 	rm -rf utils/*.log
 	rm -rf *.log
 	rm -rf tests/__pycache__
+	rm -rf .cache
+	rm -rf tts_output.mp3
 
 lint: activate install
 	#flake8 or #pylint
