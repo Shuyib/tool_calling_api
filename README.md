@@ -27,9 +27,9 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 - [License](#license)
 
 
-## File structure
-.
-├── Dockerfile.app - template to run the gradio dashboard.   
+## File structure   
+.   
+├── Dockerfile.app - template to run the gradio dashboard.      
 ├── Dockerfile.ollama - template to run the ollama server.   
 ├── docker-compose.yml - use the ollama project and gradio dashboard.   
 ├── docker-compose-codecarbon.yml - use the codecarbon project, ollama and gradio dashboard.   
