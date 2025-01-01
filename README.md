@@ -1,5 +1,5 @@
 [![Agent Continuous Integration/Continuos Delivery](https://github.com/Shuyib/tool_calling_api/actions/workflows/python-app.yml/badge.svg)](https://github.com/Shuyib/tool_calling_api/blob/main/.github/workflows/python-app.yml)
-# Exploring function calling 🗣️ 🤖 with Python and ollama 🦙
+# Exploring function calling 🗣️ 🤖 🔉 with Python and ollama 🦙
 Function-calling with Python and ollama. We are going to use the Africa's Talking API to send airtime and messages to a phone number using Natural language. Thus, creating an generative ai agent. Here are examples of prompts you can use to send airtime to a phone number:
 - Send airtime to xxxxxxxxx2046 and xxxxxxxxx3524 with an amount of 10 in currency KES
 - Send a message to xxxxxxxxx2046 and xxxxxxxxx3524 with a message "Hello, how are you?", using the username "username".
