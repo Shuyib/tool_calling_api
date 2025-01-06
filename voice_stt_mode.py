@@ -291,7 +291,7 @@ async def process_user_message(
             model=model_name,
             messages=messages,
             tools=None if use_vision else tools,
-            format=ReceiptData.model_json_schema() if use_vision else None,
+            format="json" if use_vision else None,
             options={"temperature": 0},
         )
     except Exception as e:
