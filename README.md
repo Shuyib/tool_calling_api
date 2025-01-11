@@ -51,7 +51,7 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 |    └── constants.py - This file contains system prompts to adjust the model's behavior.   
 └── voice_stt_mode.py - Gradio tabbed interface with Speech-to-text interface that allows edits and a text interface.   
 
-### Attribution
+## Attribution
 * This project uses the Qwen2.5-0.5B model developed by Alibaba Cloud under the Apache License 2.0. The original project can be found at [Qwen technical report](https://arxiv.org/abs/2412.15115)
 * Inspired by this example for the [Groq interface STT](https://github.com/bklieger-groq/gradio-groq-basics)
 * Microsoft Autogen was used to simulate multistep interactions. The original project can be found at [Microsoft Autogen](https://github.com/microsoft/autogen)
