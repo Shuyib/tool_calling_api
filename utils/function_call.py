@@ -266,10 +266,10 @@ def translate_text(text: str, target_language: str) -> str:
 
     Parameters
     ----------
-    text : str : 
+    text : str :
         The text to translate.
 
-    target_language: str : 
+    target_language: str :
         The language of interest
         limited to french, arabic and portugese
 
