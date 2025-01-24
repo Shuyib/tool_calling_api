@@ -266,8 +266,27 @@ def translate_text(text: str, target_language: str) -> str:
 
     Parameters
     ----------
-    text : str : The text to translate.
+    text : str : 
+        The text to translate.
 
+    target_language: str : 
+        The language of interest
+        limited to french, arabic and portugese
+
+    Returns
+    -------
+    str: translated language with autogen feedback
+
+    Raises
+    ------
+    ValueError
+        If the target language is not one of "French", "Arabic", or "Portuguese".
+
+
+    Examples
+    -------
+    >>> translate_text("Hello, how are you?", "French")
+    'Bonjour, comment ça va?'
 
     """
     if target_language.lower() not in ["french", "arabic", "portuguese"]:
