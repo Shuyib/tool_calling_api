@@ -18,6 +18,8 @@ successful responses
 'discount': 'KES 0.4000', 'errorMessage': 'None', 'phoneNumber': 'xxxxxxxx2046', 
 'requestId': 'ATQid_xxxx', 'status': 'Sent'}], 'totalAmount': 'KES 10.0000', 
 'totalDiscount': 'KES 0.4000'}
+
+
 """
 
 import os
