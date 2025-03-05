@@ -38,6 +38,7 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 ├── Makefile - This file contains the commands to run the project.   
 ├── README.md - This file contains the project documentation. This is the file you are currently reading.   
 ├── requirements.txt - This file contains the dependencies for the project.   
+├── requirements-dev.txt - This filee contains the dependecies for the devcontainer referencing `requirements.txt`    
 ├── summary.png - How function calling works with a diagram.   
 ├── tests - This directory contains the test files for the project.   
 │   ├── __init__.py - This file initializes the tests directory as a package.      
