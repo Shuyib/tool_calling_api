@@ -1,7 +1,7 @@
 """
 Using the Africa's Talking API, send airtime to a phone number.
 
-You'll need to have an Africa's Talking account, request for airtime API access in their dashboard, 
+You'll need to have an Africa's Talking account, request for airtime API access in their dashboard,
 and get your API key and username.
 
 This is the error you get
@@ -9,17 +9,15 @@ This is the error you get
 'responses': [], 'totalAmount': '0', 'totalDiscount': '0'}
 
 successful responses
-{'errorMessage': 'None', 'numSent': 1, 'responses': [{'amount': 'KES 10.0000', 
-'discount': 'KES 0.4000', 'errorMessage': 'None', 'phoneNumber': 'xxxxxxxx2046', 
-'requestId': 'ATQid_xxxx', 'status': 'Sent'}], 'totalAmount': 'KES 10.0000', 
+{'errorMessage': 'None', 'numSent': 1, 'responses': [{'amount': 'KES 10.0000',
+'discount': 'KES 0.4000', 'errorMessage': 'None', 'phoneNumber': 'xxxxxxxx2046',
+'requestId': 'ATQid_xxxx', 'status': 'Sent'}], 'totalAmount': 'KES 10.0000',
 'totalDiscount': 'KES 0.4000'}
 
 {'errorMessage': 'None', 'numSent': 1, 'responses': [{'amount': 'KES 10.0000',
-'discount': 'KES 0.4000', 'errorMessage': 'None', 'phoneNumber': 'xxxxxxxx2046', 
-'requestId': 'ATQid_xxxx', 'status': 'Sent'}], 'totalAmount': 'KES 10.0000', 
+'discount': 'KES 0.4000', 'errorMessage': 'None', 'phoneNumber': 'xxxxxxxx2046',
+'requestId': 'ATQid_xxxx', 'status': 'Sent'}], 'totalAmount': 'KES 10.0000',
 'totalDiscount': 'KES 0.4000'}
-
-
 """
 
 import os
