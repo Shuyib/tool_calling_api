@@ -1,5 +1,6 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.245.0/containers/python-3
+// credit: https://github.com/pamelafox/python-openai-demos/tree/main/.devcontainer/ollama
 {
     "name": "python-openai-demos (Ollama)",
     "image": "mcr.microsoft.com/devcontainers/python:3.12-bullseye",
@@ -32,6 +33,6 @@
 
     // Required to handle Ollama models
     "hostRequirements": {
-        "memory": "64gb"
+        "memory": "8gb"
     }
 }
