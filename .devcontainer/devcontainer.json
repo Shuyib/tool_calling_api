@@ -33,6 +33,6 @@
 
     // Required to handle Ollama models
     "hostRequirements": {
-        "memory": "8gb"
+        "memory": "4gb"
     }
 }
