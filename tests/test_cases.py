@@ -11,7 +11,15 @@ import re
 import pytest
 import pytest_asyncio
 from unittest.mock import patch, MagicMock, AsyncMock
-from utils.function_call import send_airtime, send_message, search_news, translate_text
+from utils.function_call import (
+    send_airtime,
+    send_message,
+    search_news,
+    translate_text,
+    send_ussd,
+    send_mobile_data,
+    make_voice_call,
+)
 
 # Load environment variables: TEST_PHONE_NUMBER
 PHONE_NUMBER = os.getenv("TEST_PHONE_NUMBER")
@@ -190,3 +198,27 @@ async def test_translate_text_special_chars():
     with pytest.raises(ValueError) as exc:
         await translate_text("@#$%^", "French")
     assert "Invalid input" in str(exc.value)
+
+
+@patch("utils.function_call.africastalking.USSD")
+def test_send_ussd_success(mock_ussd):
+    """Test the send_ussd function for a successful USSD request."""
+    mock_ussd.send.return_value = {"Status": "Success"}
+    result = send_ussd(PHONE_NUMBER, "*123#")
+    assert re.search(r"Success", str(result))
+
+
+@patch("utils.function_call.africastalking.MobileData")
+def test_send_mobile_data_success(mock_data):
+    """Test the send_mobile_data function for a successful bundle purchase."""
+    mock_data.send.return_value = {"status": "Success"}
+    result = send_mobile_data(PHONE_NUMBER, "500MB", "safaricom", "daily")
+    assert re.search(r"Success", str(result))
+
+
+@patch("utils.function_call.africastalking.Voice")
+def test_make_voice_call_success(mock_voice):
+    """Test the make_voice_call function for successful call initiation."""
+    mock_voice.call.return_value = {"status": "Queued"}
+    result = make_voice_call("+254700000001", PHONE_NUMBER)
+    assert re.search(r"Queued", str(result))

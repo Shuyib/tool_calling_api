@@ -232,6 +232,120 @@ def send_message(phone_number: str, message: str, username: str, **kwargs) -> No
         return json.dumps({"error": str(e)})
 
 
+def send_ussd(phone_number: str, code: str, **kwargs) -> str:
+    """Send a USSD code to a phone number.
+
+    Parameters
+    ----------
+    phone_number : str
+        The phone number to dial the USSD code on.
+    code : str
+        The USSD code to send, e.g. ``*123#``.
+
+    Returns
+    -------
+    str
+        JSON response from the API.
+
+    Examples
+    --------
+    send_ussd("+254712345678", "*123#")
+    """
+    username = os.getenv("AT_USERNAME")
+    api_key = os.getenv("AT_API_KEY")
+    africastalking.initialize(username, api_key)
+    ussd = africastalking.USSD
+    masked_number = mask_phone_number(phone_number)
+    logger.info("Sending USSD %s to %s", code, masked_number)
+
+    try:
+        response = ussd.send(code, phone_number)
+        logger.debug("USSD response: %s", response)
+        return json.dumps(response)
+    except Exception as e:
+        logger.error("Encountered an error while sending USSD: %s", str(e))
+        return json.dumps({"error": str(e)})
+
+
+def send_mobile_data(phone_number: str, bundle: str, provider: str, plan: str, **kwargs) -> str:
+    """Send a mobile data bundle to a phone number.
+
+    Parameters
+    ----------
+    phone_number : str
+        The recipient phone number.
+    bundle : str
+        The data bundle amount, e.g. ``500MB``.
+    provider : str
+        Mobile data provider.
+    plan : str
+        Identifier for the data plan.
+
+    Returns
+    -------
+    str
+        JSON response from the API.
+
+    Examples
+    --------
+    send_mobile_data("+254712345678", "500MB", "safaricom", "daily")
+    """
+    username = os.getenv("AT_USERNAME")
+    api_key = os.getenv("AT_API_KEY")
+    africastalking.initialize(username, api_key)
+    data = africastalking.MobileData
+    masked_number = mask_phone_number(phone_number)
+    logger.info("Sending mobile data to %s", masked_number)
+
+    try:
+        response = data.send(
+            phone_number=phone_number,
+            quantity=bundle,
+            provider=provider,
+            plan=plan,
+        )
+        logger.debug("Data bundle response: %s", response)
+        return json.dumps(response)
+    except Exception as e:
+        logger.error("Encountered an error while sending mobile data: %s", str(e))
+        return json.dumps({"error": str(e)})
+
+
+def make_voice_call(from_number: str, to_number: str, **kwargs) -> str:
+    """Initiate a voice call between two numbers.
+
+    Parameters
+    ----------
+    from_number : str
+        The caller ID for the voice call.
+    to_number : str
+        The recipient of the call.
+
+    Returns
+    -------
+    str
+        JSON response from the API.
+
+    Examples
+    --------
+    make_voice_call("+254700000001", "+254712345678")
+    """
+    username = os.getenv("AT_USERNAME")
+    api_key = os.getenv("AT_API_KEY")
+    africastalking.initialize(username, api_key)
+    voice = africastalking.Voice
+    masked_number = mask_phone_number(to_number)
+    logger.info("Calling %s from %s", masked_number, from_number)
+
+    try:
+        response = voice.call(from_=from_number, to=[to_number])
+        logger.debug("Voice call response: %s", response)
+        return json.dumps(response)
+    except Exception as e:
+        logger.error("Encountered an error while making voice call: %s", str(e))
+        return json.dumps({"error": str(e)})
+
+
 def search_news(query: str, **kwargs) -> str:
     """Search for news using DuckDuckGo search engine based on the query provided.
 
@@ -457,6 +571,77 @@ async def run(model: str, user_input: str):
                     },
                 },
             },
+            {
+                "type": "function",
+                "function": {
+                    "name": "send_ussd",
+                    "description": "Send a USSD code to a phone number using the Africa's Talking API",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "phone_number": {
+                                "type": "string",
+                                "description": "The phone number in international format",
+                            },
+                            "code": {
+                                "type": "string",
+                                "description": "The USSD code to dial",
+                            },
+                        },
+                        "required": ["phone_number", "code"],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "send_mobile_data",
+                    "description": "Send a mobile data bundle using the Africa's Talking API",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "phone_number": {
+                                "type": "string",
+                                "description": "The phone number in international format",
+                            },
+                            "bundle": {
+                                "type": "string",
+                                "description": "The bundle amount e.g. 500MB",
+                            },
+                            "provider": {
+                                "type": "string",
+                                "description": "The data provider",
+                            },
+                            "plan": {
+                                "type": "string",
+                                "description": "Identifier for the data plan",
+                            },
+                        },
+                        "required": ["phone_number", "bundle", "provider", "plan"],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "make_voice_call",
+                    "description": "Initiate a voice call between two numbers using Africa's Talking API",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "from_number": {
+                                "type": "string",
+                                "description": "The caller ID",
+                            },
+                            "to_number": {
+                                "type": "string",
+                                "description": "The recipient phone number",
+                            },
+                        },
+                        "required": ["from_number", "to_number"],
+                    },
+                },
+            },
         ],
     )
     # Add the model's response to the conversation history
@@ -475,6 +660,9 @@ async def run(model: str, user_input: str):
             "send_message": send_message,
             "search_news": search_news,
             "translate_text": translate_text,
+            "send_ussd": send_ussd,
+            "send_mobile_data": send_mobile_data,
+            "make_voice_call": make_voice_call,
         }
         for tool in response["message"]["tool_calls"]:
             # Get the function to call based on the tool name
@@ -507,6 +695,26 @@ async def run(model: str, user_input: str):
                 function_response = function_to_call(
                     tool["function"]["arguments"]["text"],
                     tool["function"]["arguments"]["target_language"],
+                )
+                logger.debug("function response: %s", function_response)
+            elif tool["function"]["name"] == "send_ussd":
+                function_response = function_to_call(
+                    tool["function"]["arguments"]["phone_number"],
+                    tool["function"]["arguments"]["code"],
+                )
+                logger.debug("function response: %s", function_response)
+            elif tool["function"]["name"] == "send_mobile_data":
+                function_response = function_to_call(
+                    tool["function"]["arguments"]["phone_number"],
+                    tool["function"]["arguments"]["bundle"],
+                    tool["function"]["arguments"]["provider"],
+                    tool["function"]["arguments"]["plan"],
+                )
+                logger.debug("function response: %s", function_response)
+            elif tool["function"]["name"] == "make_voice_call":
+                function_response = function_to_call(
+                    tool["function"]["arguments"]["from_number"],
+                    tool["function"]["arguments"]["to_number"],
                 )
                 logger.debug("function response: %s", function_response)
 
