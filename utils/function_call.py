@@ -26,12 +26,45 @@ import json
 import logging
 from importlib.metadata import version
 import asyncio
-import africastalking
-import ollama
-from autogen import ConversableAgent
+import re
+from types import SimpleNamespace, ModuleType
+import sys
 
+try:
+    import africastalking
+except ModuleNotFoundError:  # pragma: no cover - handled in tests
+    africastalking = ModuleType("africastalking")
+
+    class _DummyService:
+        def send(self, *_, **__):
+            raise ModuleNotFoundError("africastalking package is required")
+
+    africastalking.Airtime = SimpleNamespace(send=_DummyService().send)
+    africastalking.SMS = SimpleNamespace(send=_DummyService().send)
+
+    def initialize(*_, **__):
+        return None
+
+    africastalking.initialize = initialize
+    sys.modules.setdefault("africastalking", africastalking)
+
+try:
+    import ollama
+except ModuleNotFoundError:  # pragma: no cover - handled in tests
+    ollama = ModuleType("ollama")
+    class _AsyncClient:  # minimal stub so patching works
+        async def chat(self, *_, **__):
+            raise ModuleNotFoundError("ollama package is required")
+
+    ollama.AsyncClient = _AsyncClient
+    sys.modules.setdefault("ollama", ollama)
 # from codecarbon import EmissionsTracker  # Import the EmissionsTracker
-from duckduckgo_search import DDGS
+try:
+    from duckduckgo_search import DDGS
+except ModuleNotFoundError:  # pragma: no cover - handled in tests
+    class DDGS:  # minimal stub
+        def news(self, *_, **__):
+            raise ModuleNotFoundError("duckduckgo_search package is required")
 
 # Set up the logger
 logger = logging.getLogger(__name__)
@@ -125,6 +158,8 @@ def mask_api_key(api_key):
     --------
     mask_api_key("123456")
     """
+    if not api_key:
+        return "****"
     return "x" * (len(api_key) - 4) + api_key[-4:]
 
 
@@ -262,7 +297,7 @@ def search_news(query: str, **kwargs) -> str:
 
 
 def translate_text(text: str, target_language: str) -> str:
-    """Translate text to a specified language using Ollama & Autogen.
+    """Translate text to a specified language using Ollama.
 
     Parameters
     ----------
@@ -289,43 +324,25 @@ def translate_text(text: str, target_language: str) -> str:
     'Bonjour, comment ça va?'
 
     """
+    if not text:
+        raise ValueError("Empty text")
+
+    # text containing only special characters is not supported
+    if not re.search(r"[\w]", text):
+        raise ValueError("Invalid input")
+
     if target_language.lower() not in ["french", "arabic", "portuguese"]:
-        raise ValueError("Target language must be French, Arabic, or Portuguese.")
+        raise ValueError(
+            "Target language must be French, Arabic, or Portuguese"
+        )
 
-    config = [
-        {
-            "base_url": "http://localhost:11434/v1",
-            "model": "qwen2.5:0.5b",
-            "api_key": "ollama",
-            "api_type": "ollama",
-            "temperature": 0.5,
-        }
-    ]
+    async def _translate() -> str:
+        client = ollama.AsyncClient()
+        messages = [{"role": "user", "content": f"Translate '{text}' to {target_language}"}]
+        resp = await client.chat(model="qwen2.5:0.5b", messages=messages)
+        return resp["message"]["content"]
 
-    zoe = ConversableAgent(
-        "Zoe",
-        system_message="""You are a translation expert.
-Translate English text to the specified language with high accuracy.
-Provide only the translation without explanations.""",
-        llm_config={"config_list": config},
-        human_input_mode="NEVER",
-    )
-
-    joe = ConversableAgent(
-        "joe",
-        system_message="""You are a bilingual translation validator.
-Review translations for:
-1. Accuracy of meaning
-2. Grammar correctness
-3. Natural expression
-Provide a confidence score (0-100%) and brief feedback.""",
-        llm_config={"config_list": config},
-        human_input_mode="NEVER",
-    )
-
-    message = f"Zoe, translate '{text}' to {target_language.capitalize()}"
-    result = joe.initiate_chat(zoe, message=message, max_turns=2)
-    return result
+    return asyncio.run(_translate())
 
 
 # Asynchronous function to handle the conversation with the model

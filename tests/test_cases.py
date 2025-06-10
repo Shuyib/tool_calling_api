@@ -9,16 +9,16 @@ dependencies to ensure isolation and reliability.
 import os
 import re
 import pytest
-import pytest_asyncio
 from unittest.mock import patch, MagicMock, AsyncMock
 from utils.function_call import send_airtime, send_message, search_news, translate_text
 
-# Load environment variables: TEST_PHONE_NUMBER
-PHONE_NUMBER = os.getenv("TEST_PHONE_NUMBER")
+# Load environment variables with fallbacks for testing
+PHONE_NUMBER = os.getenv("TEST_PHONE_NUMBER", "+1234567890")
+AT_USERNAME = os.getenv("AT_USERNAME", "test_user")
 
 
-@patch("utils.function_call.africastalking.Airtime")
-def test_send_airtime_success(mock_airtime):
+@patch("utils.function_call.africastalking.Airtime.send")
+def test_send_airtime_success(mock_send):
     """
     Test the send_airtime function to ensure it successfully sends airtime.
 
@@ -31,7 +31,7 @@ def test_send_airtime_success(mock_airtime):
         Mocked Airtime API from Africa's Talking.
     """
     # Configure the mock Airtime response
-    mock_airtime.return_value.send.return_value = {
+    mock_send.return_value = {
         "numSent": 1,
         "responses": [{"status": "Sent"}],
     }
@@ -51,8 +51,8 @@ def test_send_airtime_success(mock_airtime):
         ), f"Pattern '{pattern}' not found in response"
 
 
-@patch("utils.function_call.africastalking.SMS")
-def test_send_message_success(mock_sms):
+@patch("utils.function_call.africastalking.SMS.send")
+def test_send_message_success(mock_send):
     """
     Test the send_message function to ensure it successfully sends a message.
 
@@ -65,12 +65,10 @@ def test_send_message_success(mock_sms):
         Mocked SMS API from Africa's Talking.
     """
     # Configure the mock SMS response
-    mock_sms.return_value.send.return_value = {
-        "SMSMessageData": {"Message": "Sent to 1/1"}
-    }
+    mock_send.return_value = {"SMSMessageData": {"Message": "Sent to 1/1"}}
 
     # Call the send_message function
-    result = send_message(PHONE_NUMBER, "In Qwen, we trust", os.getenv("AT_USERNAME"))
+    result = send_message(PHONE_NUMBER, "In Qwen, we trust", AT_USERNAME)
 
     # Define patterns to check in the response
     message_patterns = [r"Sent to 1/1"]
@@ -158,7 +156,7 @@ def test_translate_text_function(text, target_language, expected_response, shoul
 
     with patch("ollama.AsyncClient") as mock_client:
         instance = MagicMock()
-        instance.chat.return_value = mock_chat_response
+        instance.chat = AsyncMock(return_value=mock_chat_response)
         mock_client.return_value = instance
 
         if not text:
