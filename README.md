@@ -31,7 +31,6 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 - [Run in Docker](#run-in-docker)
 - [Voice Functionality Setup](#voice-functionality-setup)
 - [Usage](#usage)
-- [Africa's Talking Service Status](#africas-talking-service-status-🚦)
 - [Use cases](#use-cases)
 - [Responsible AI Practices](#responsible-ai-practices)
 - [Limitations](#limitations)
