@@ -28,7 +28,13 @@ from importlib.metadata import version
 import asyncio
 import africastalking
 import ollama
+import requests
 from autogen import ConversableAgent
+from pydantic import BaseModel, field_validator, ValidationError
+from typing import Union
+from typing import Optional
+import re
+from .communication_apis import send_mobile_data_wrapper, send_mobile_data_original
 
 # from codecarbon import EmissionsTracker  # Import the EmissionsTracker
 from duckduckgo_search import DDGS
@@ -79,6 +85,179 @@ for handler in logger.handlers:
 
 # Set the region explicitly to East Africa
 os.environ["CODECARBON_REGION"] = "africa_east"
+
+
+class SendMobileDataRequest(BaseModel):
+    phone_number: str
+    bundle: str
+    provider: str
+    plan: str
+
+    @field_validator("phone_number")
+    @classmethod
+    def validate_phone_number(cls, v):
+        if not v or not v.startswith("+"):
+            raise ValueError(
+                "phone_number must be in international format, e.g. +254712345678"
+            )
+        return v
+
+    @field_validator("bundle")
+    @classmethod
+    def validate_bundle(cls, v):
+        # Allow numeric values or strings with MB/GB
+        if not re.match(r"^\d+(?:MB|GB)?$", str(v), re.IGNORECASE):
+            raise ValueError(
+                "bundle must be a number or a string with unit, e.g. 50, 500MB, 1GB"
+            )
+        return v
+
+    @field_validator("provider")
+    @classmethod
+    def validate_provider(cls, v):
+        if not v:
+            raise ValueError("provider must not be empty")
+        return v
+
+    @field_validator("plan")
+    @classmethod
+    def validate_plan(cls, v):
+        valid_plans = ["daily", "weekly", "monthly", "day", "week", "month"]
+        if v.lower() not in valid_plans:
+            raise ValueError(f"plan must be one of: {', '.join(valid_plans)}")
+        return v
+
+
+class SendUSSDRequest(BaseModel):
+    phone_number: str
+    code: str
+
+    @field_validator("phone_number")
+    @classmethod
+    def validate_phone_number(cls, v):
+        if not v.startswith("+"):
+            raise ValueError("Phone number must start with +")
+        return v
+
+
+class MakeVoiceCallRequest(BaseModel):
+    from_number: str
+    to_number: str
+
+    @field_validator("from_number", "to_number")
+    @classmethod
+    def validate_phone_numbers(cls, v):
+        if not v.startswith("+"):
+            raise ValueError("Phone number must start with +")
+        return v
+
+
+class MakeVoiceCallWithTextRequest(BaseModel):
+    from_number: str
+    to_number: str
+    message: str
+    voice: Optional[str] = "woman"
+
+    @field_validator("from_number", "to_number")
+    @classmethod
+    def validate_phone_numbers(cls, v):
+        if not v.startswith("+"):
+            raise ValueError("Phone number must start with +")
+        return v
+
+    @field_validator("voice")
+    @classmethod
+    def validate_voice(cls, v):
+        if v not in ["man", "woman"]:
+            raise ValueError("Voice must be either 'man' or 'woman'")
+        return v
+
+
+class MakeVoiceCallAndPlayAudioRequest(BaseModel):
+    from_number: str
+    to_number: str
+    audio_url: str
+
+    @field_validator("from_number", "to_number")
+    @classmethod
+    def validate_phone_numbers(cls, v):
+        if not v.startswith("+"):
+            raise ValueError("Phone number must start with +")
+        return v
+
+    @field_validator("audio_url")
+    @classmethod
+    def validate_audio_url(cls, v):
+        # Basic URL validation, can be expanded
+        if not v.startswith("http://") and not v.startswith("https://"):
+            raise ValueError("audio_url must be a valid HTTP/HTTPS URL")
+        return v
+
+
+class GetApplicationBalanceRequest(BaseModel):
+    """Request model for getting application balance"""
+
+    sandbox: Optional[bool] = False
+
+    @field_validator("sandbox")
+    @classmethod
+    def validate_sandbox(cls, v):
+        return bool(v)
+
+
+class SendWhatsAppMessageRequest(BaseModel):
+    """Request model for sending WhatsApp messages"""
+
+    wa_number: str
+    phone_number: str
+    message: Optional[str] = None
+    media_type: Optional[str] = None
+    url: Optional[str] = None
+    caption: Optional[str] = None
+    sandbox: Optional[bool] = False
+
+    @field_validator("wa_number", "phone_number")
+    @classmethod
+    def validate_phone_numbers(cls, v):
+        if not v.startswith("+"):
+            raise ValueError("Phone number must start with +")
+        return v
+
+    @field_validator("media_type")
+    @classmethod
+    def validate_media_type(cls, v):
+        if v and v not in ["Image", "Video", "Audio", "Voice"]:
+            raise ValueError("media_type must be one of: Image, Video, Audio, Voice")
+        return v
+
+
+class SendAirtimeRequest(BaseModel):
+    phone_number: str
+    currency_code: str
+    amount: str
+
+    @field_validator("phone_number")
+    @classmethod
+    def validate_phone_number(cls, v):
+        if not v or not v.startswith("+") or not v[1:].isdigit():
+            raise ValueError(
+                "phone_number must be in international format, e.g. +254712345678"
+            )
+        return v
+
+    @field_validator("currency_code")
+    @classmethod
+    def validate_currency_code(cls, v):
+        if not v or len(v) != 3 or not v.isalpha():
+            raise ValueError("currency_code must be a 3-letter ISO code, e.g. KES")
+        return v
+
+    @field_validator("amount")
+    @classmethod
+    def validate_amount(cls, v):
+        if not v or not re.match(r"^\d+(\.\d{1,2})?$", v):
+            raise ValueError("amount must be a valid decimal number, e.g. 10 or 10.50")
+        return v
 
 
 # Mask phone number and API key for the logs
@@ -148,50 +327,47 @@ def send_airtime(phone_number: str, currency_code: str, amount: str, **kwargs) -
 
     Returns
     -------
-    None
+    str
+        JSON response from the API
 
     Examples
     --------
     send_airtime("+254712345678", "KES", "10")
 
     """
-    # Load credentials from environment variables
-    username = os.getenv("AT_USERNAME")
-    api_key = os.getenv("AT_API_KEY")
-    logger.info("Loaded the credentials: %s %s", username, mask_api_key(api_key))
-
-    # Initialize the SDK
-    africastalking.initialize(username, api_key)
-
-    # Get the airtime service
-    airtime = africastalking.Airtime
-
-    # Mask the phone number for logging
-    masked_number = mask_phone_number(phone_number)
-    logger.info("Sending airtime to %s", masked_number)
+    try:
+        validated = SendAirtimeRequest(
+            phone_number=phone_number, currency_code=currency_code, amount=amount
+        )
+    except ValidationError as ve:
+        logger.error(f"Airtime parameter validation failed: {ve}")
+        return str(ve)
 
     try:
-        # Send airtime
-        responses = airtime.send(
-            phone_number=phone_number, amount=amount, currency_code=currency_code
-        )
-        logger.debug("The response from sending airtime: %s", responses)
-        return json.dumps(responses)
+        # Delegate to the standardized implementation in communication_apis
+        from .communication_apis import send_airtime as comm_send_airtime
+
+        masked_number = mask_phone_number(phone_number)
+        logger.info("Delegating airtime sending to %s", masked_number)
+        logger.info("Amount: %s %s", amount, currency_code)
+
+        response = comm_send_airtime(phone_number, currency_code, amount)
+        logger.debug("Airtime delegation response: %s", response)
+        return response
+
     except Exception as e:
         logger.error("Encountered an error while sending airtime: %s", str(e))
         return json.dumps({"error": str(e)})
 
 
-def send_message(phone_number: str, message: str, username: str, **kwargs) -> None:
+def send_message(phone_number: str, message: str, username: str, **kwargs) -> str:
     """Allows you to send a message to a phone number.
 
     Parameters
     ----------
-    phone_number: str :
-    The phone number to send the message to.
+    phone_number: str : The phone number to send the message to.
     It should be in the international format.
-    eg. +254712345678 (Kenya) -
-    +254 is the country code. 712345678 is the phone number.
+    eg. +254712345678 (Kenya) - +254 is the country code. 712345678 is the phone number.
 
     message: str : The message to send. It should be a string.
     eg. "Hello, this is a test message"
@@ -201,34 +377,398 @@ def send_message(phone_number: str, message: str, username: str, **kwargs) -> No
 
     Returns
     -------
-    None
+    str
+        JSON response from the API
 
     Examples
     --------
     send_message("+254712345678", "Hello there", "jak2")
 
     """
-    # Load API key from environment variables
-    api_key = os.getenv("AT_API_KEY")
-    logger.info("Loaded the API key: %s", mask_api_key(api_key))
-
-    # Initialize the SDK
-    africastalking.initialize(username, api_key)
-
-    # Get the SMS service
-    sms = africastalking.SMS
-
-    # Mask the phone number for logging
-    masked_number = mask_phone_number(phone_number)
-    logger.info("Sending message to %s", masked_number)
+    try:
+        validated = SendSMSRequest(
+            phone_number=phone_number, message=message, username=username
+        )
+    except ValidationError as ve:
+        logger.error(f"SMS parameter validation failed: {ve}")
+        return str(ve)
 
     try:
-        # Send the message
-        response = sms.send(message, [phone_number])
-        logger.debug("Message sent to %s. Response: %s", masked_number, response)
-        return json.dumps(response)
+        from .communication_apis import send_message as comm_send_message
+
+        masked_number = mask_phone_number(phone_number)
+        logger.info("Delegating message sending to %s", masked_number)
+        logger.info("Message: %s", message)
+        response = comm_send_message(phone_number, message, username)
+        logger.debug("Message delegation response: %s", response)
+        return response
     except Exception as e:
-        logger.error("Encountered an error while sending the message: %s", str(e))
+        logger.error("Encountered an error while sending message: %s", str(e))
+        return json.dumps({"error": str(e)})
+
+
+def send_ussd(phone_number: str, code: str, **kwargs) -> str:
+    """Send a USSD code to a phone number.
+
+    Parameters
+    ----------
+    phone_number : str
+        The phone number to dial the USSD code on.
+    code : str
+        The USSD code to send, e.g. ``*123#``.
+
+    Returns
+    -------
+    str
+        JSON response from the API.
+
+    Examples
+    --------
+    send_ussd("+254712345678", "*123#")
+    """
+    logger.info("send_ussd received: phone_number=%r, code=%r", phone_number, code)
+    if not phone_number or not code:
+        error_msg = (
+            f"Missing required arguments: phone_number={phone_number}, code={code}"
+        )
+        logger.error(error_msg)
+        return json.dumps({"error": error_msg})
+
+    try:
+        # Delegate to the standardized implementation in communication_apis
+        from .communication_apis import send_ussd as comm_send_ussd
+
+        masked_number = mask_phone_number(phone_number)
+        logger.info("Delegating USSD sending to %s", masked_number)
+
+        response = comm_send_ussd(phone_number, code)
+        logger.debug("USSD delegation response: %s", response)
+        return response
+
+    except Exception as e:
+        error_msg = f"Encountered an error while sending USSD: {str(e)}"
+        logger.error(error_msg)
+        return json.dumps({"error": error_msg})
+
+
+def get_wallet_balance(**kwargs) -> str:
+    """Fetch the current wallet balance from Africa's Talking account using the documented API endpoint."""
+    try:
+        username = os.getenv("AT_USERNAME")
+        api_key = os.getenv("AT_API_KEY")
+        logger.info("Loaded the credentials: %s %s", username, mask_api_key(api_key))
+        url = f"https://bundles.africastalking.com/query/wallet/balance?username={username}"
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "apiKey": api_key,
+        }
+        logger.info("Fetching wallet balance from documented endpoint")
+        resp = requests.get(url, headers=headers, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+        logger.info("Wallet balance response: %s", data)
+        return json.dumps(data)
+    except Exception as e:
+        logger.error("Encountered an error while fetching wallet balance: %s", str(e))
+        return json.dumps({"error": str(e)})
+
+
+def make_voice_call(from_number: str, to_number: str, **kwargs) -> str:
+    """Initiate a voice call between two numbers.
+
+    Parameters
+    ----------
+    from_number : str
+        The caller ID for the voice call.
+    to_number : str
+        The recipient of the call.
+
+    Returns
+    -------
+    str
+        JSON response from the API.
+
+    Examples
+    --------
+    make_voice_call("+254700000001", "+254712345678")
+    """
+    logger.info(
+        "make_voice_call received: from_number=%r, to_number=%r", from_number, to_number
+    )
+    # Defensive check for argument validity
+    if not from_number or not to_number or not to_number.startswith("+"):
+        logger.error(
+            "Invalid phone numbers: from_number=%r, to_number=%r",
+            from_number,
+            to_number,
+        )
+        return json.dumps(
+            {
+                "error": f"Invalid phone numbers: from_number={from_number}, to_number={to_number}"
+            }
+        )
+    try:
+        # Delegate to the standardized implementation in communication_apis
+        from .communication_apis import make_voice_call as comm_make_voice_call
+
+        masked_to_number = mask_phone_number(to_number)
+        masked_from_number = mask_phone_number(from_number)
+        logger.info(
+            "Delegating voice call to %s from %s", masked_to_number, masked_from_number
+        )
+
+        response = comm_make_voice_call(from_number, to_number)
+        logger.debug("Voice call delegation response: %s", response)
+        return response
+
+    except Exception as e:
+        logger.error("Encountered an error while making voice call: %s", str(e))
+        return json.dumps({"error": str(e)})
+
+
+def make_voice_call_with_text(
+    from_number: str, to_number: str, message: str, voice_type: str = "woman", **kwargs
+) -> str:
+    """Make a voice call and say a message using text-to-speech.
+
+    This function initiates a voice call and uses Africa's Talking text-to-speech
+    engine to read the provided message to the recipient.
+
+    Parameters
+    ----------
+    from_number : str
+        The caller ID for the voice call (must start with +)
+    to_number : str
+        The recipient phone number (must start with +)
+    message : str
+        The text message to be spoken during the call
+    voice_type : str, optional
+        The voice type to use ("man" or "woman"), defaults to "woman"
+
+    Returns
+    ------
+    str
+        JSON response from the API containing call details
+
+    Examples
+    --------
+    make_voice_call_with_text("+254700000001", "+254712345678", "Hello, this is a test message", "woman")
+    """
+    try:
+        # Validate inputs
+        request = MakeVoiceCallWithTextRequest(
+            from_number=from_number,
+            to_number=to_number,
+            message=message,
+            voice=voice_type,
+        )
+
+        from .communication_apis import (
+            make_voice_call_with_text as comm_make_voice_call_with_text,
+        )
+
+        masked_to_number = mask_phone_number(to_number)
+        masked_from_number = mask_phone_number(from_number)
+        logger.info(
+            "Making voice call with text to %s from %s",
+            masked_to_number,
+            masked_from_number,
+        )
+        logger.info(
+            "Message: %s", message[:50] + "..." if len(message) > 50 else message
+        )
+
+        # Call the communication_apis function
+        response = comm_make_voice_call_with_text(
+            from_number, to_number, message, voice_type
+        )
+
+        logger.debug("Voice call with text response: %s", response)
+        return response
+
+    except Exception as e:
+        logger.error(
+            "Encountered an error while making voice call with text: %s", str(e)
+        )
+        return json.dumps({"error": str(e)})
+
+
+def make_voice_call_and_play_audio(
+    from_number: str, to_number: str, audio_url: str, **kwargs
+) -> str:
+    """Make a voice call and play an audio file from a URL.
+
+    This function initiates a voice call and plays an audio file from a publicly
+    accessible URL. The actual playback is handled by the voice_callback_server.py
+    which should serve an XML with the <Play> action when Africa's Talking requests
+    call instructions.
+
+    Parameters
+    ----------
+    from_number : str
+        The caller ID for the voice call (must start with +)
+    to_number : str
+        The recipient phone number (must start with +)
+    audio_url : str
+        The public URL of the audio file to play (e.g., MP3, WAV).
+        Must be a direct HTTP/HTTPS URL to the audio file.
+
+    Returns
+    -------
+    str
+        JSON response from the API containing call details.
+
+    Examples
+    --------
+    make_voice_call_and_play_audio("+254700000001", "+254712345678", "https://example.com/audio.mp3")
+    """
+    try:
+        # Validate inputs using pydantic
+        request = MakeVoiceCallAndPlayAudioRequest(
+            from_number=from_number, to_number=to_number, audio_url=audio_url
+        )
+
+        from .communication_apis import (
+            make_voice_call_and_play_audio as comm_make_voice_call_and_play_audio,
+        )
+
+        masked_to_number = mask_phone_number(to_number)
+        masked_from_number = mask_phone_number(from_number)
+        logger.info(
+            "Making voice call to %s from %s to play audio: %s",
+            masked_to_number,
+            masked_from_number,
+            audio_url,
+        )
+
+        # Call the communication_apis function
+        response = comm_make_voice_call_and_play_audio(
+            from_number, to_number, audio_url
+        )
+        logger.debug("Voice call (for play audio) response: %s", response)
+        return response
+
+    except Exception as e:
+        logger.error(
+            "Encountered an error while making voice call to play audio: %s", str(e)
+        )
+        return json.dumps({"error": str(e)})
+
+
+def get_application_balance(sandbox: bool = False, **kwargs) -> str:
+    """Fetch the general application balance from Africa's Talking using the Application Data endpoint."""
+    try:
+        username = os.getenv("AT_USERNAME")
+        api_key = os.getenv("AT_API_KEY")
+        logger.info("Loaded the credentials: %s %s", username, mask_api_key(api_key))
+        if sandbox:
+            url = f"https://api.sandbox.africastalking.com/version1/user?username={username}"
+        else:
+            url = f"https://api.africastalking.com/version1/user?username={username}"
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "apiKey": api_key,
+        }
+        logger.info(
+            "Fetching application balance from Application Data endpoint: %s", url
+        )
+        resp = requests.get(url, headers=headers, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+        logger.info("Application balance response: %s", data)
+        return json.dumps(data)
+    except Exception as e:
+        logger.error(
+            "Encountered an error while fetching application balance: %s", str(e)
+        )
+        return json.dumps({"error": str(e)})
+
+
+def send_whatsapp_message(
+    wa_number: str,
+    phone_number: str,
+    message: str = None,
+    media_type: str = None,
+    url: str = None,
+    caption: str = None,
+    sandbox: bool = False,
+    **kwargs,
+) -> str:
+    """Send a WhatsApp message using Africa's Talking API.
+
+    Parameters
+    ----------
+    wa_number : str
+        The WhatsApp phone number associated with your AT account (sender)
+    phone_number : str
+        The recipient's phone number
+    message : str, optional
+        The text message to send
+    media_type : str, optional
+        The type of media (Image, Video, Audio, Voice)
+    url : str, optional
+        The hosted URL of the media
+    caption : str, optional
+        The caption for the media
+    sandbox : bool, optional
+        Use sandbox endpoint if True
+
+    Returns
+    -------
+    str
+        JSON response from the API
+
+    Examples
+    --------
+    send_whatsapp_message("+254799999999", "+254700000000", message="Hello!")
+    send_whatsapp_message("+254799999999", "+254700000000", media_type="Image", url="https://example.com/image.jpg", caption="Check this out!")
+    """
+    try:
+        from .communication_apis import send_whatsapp_message as send_whatsapp
+
+        # Validate inputs
+        request = SendWhatsAppMessageRequest(
+            wa_number=wa_number,
+            phone_number=phone_number,
+            message=message,
+            media_type=media_type,
+            url=url,
+            caption=caption,
+            sandbox=sandbox,
+        )
+
+        username = os.getenv("AT_USERNAME")
+        api_key = os.getenv("AT_API_KEY")
+
+        if not username or not api_key:
+            logger.error("AT_USERNAME or AT_API_KEY missing")
+            return '{"error": "Authentication credentials missing"}'
+
+        logger.info(
+            "Sending WhatsApp message from %s to %s",
+            mask_phone_number(request.wa_number),
+            mask_phone_number(request.phone_number),
+        )
+
+        result = send_whatsapp(
+            username=username,
+            api_key=api_key,
+            wa_number=request.wa_number,
+            phone_number=request.phone_number,
+            message=request.message,
+            media_type=request.media_type,
+            url=request.url,
+            caption=request.caption,
+            sandbox=request.sandbox,
+        )
+
+        logger.info("WhatsApp message sent successfully")
+        return result
+
+    except Exception as e:
+        logger.error("Error sending WhatsApp message: %s", str(e))
         return json.dumps({"error": str(e)})
 
 
@@ -289,7 +829,17 @@ def translate_text(text: str, target_language: str) -> str:
     'Bonjour, comment ça va?'
 
     """
-    if target_language.lower() not in ["french", "arabic", "portuguese"]:
+    language_map = {
+        "french": "French",
+        "fr": "French",
+        "arabic": "Arabic",
+        "ar": "Arabic",
+        "portuguese": "Portuguese",
+        "pt": "Portuguese",
+    }
+    normalized_language = language_map.get(target_language.lower())
+
+    if not normalized_language:
         raise ValueError("Target language must be French, Arabic, or Portuguese.")
 
     config = [
@@ -323,7 +873,7 @@ Provide a confidence score (0-100%) and brief feedback.""",
         human_input_mode="NEVER",
     )
 
-    message = f"Zoe, translate '{text}' to {target_language.capitalize()}"
+    message = f"Zoe, translate '{text}' to {normalized_language}"
     result = joe.initiate_chat(zoe, message=message, max_turns=2)
     return result
 
@@ -457,6 +1007,214 @@ async def run(model: str, user_input: str):
                     },
                 },
             },
+            {
+                "type": "function",
+                "function": {
+                    "name": "send_ussd",
+                    "description": "Send a USSD code to a phone number using the Africa's Talking API",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "phone_number": {
+                                "type": "string",
+                                "description": "The phone number in international format",
+                            },
+                            "code": {
+                                "type": "string",
+                                "description": "The USSD code to dial",
+                            },
+                        },
+                        "required": ["phone_number", "code"],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "send_mobile_data",  # Change from "send_mobile_data_wrapper" to "send_mobile_data"
+                    "description": "Send a mobile data bundle using the Africa's Talking API",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "phone_number": {
+                                "type": "string",
+                                "description": "The phone number in international format",
+                            },
+                            "bundle": {
+                                "type": "string",
+                                "description": "The bundle amount, e.g. '100MB', '1GB', or just '50' for 50MB",
+                            },
+                            "provider": {
+                                "type": "string",
+                                "description": "The mobile network provider, e.g. 'Safaricom', 'Airtel'",
+                            },
+                            "plan": {
+                                "type": "string",
+                                "description": "The bundle plan duration, e.g. 'daily', 'weekly', 'monthly'",
+                            },
+                            "product_name": {
+                                "type": "string",
+                                "description": "The name of the product to be used for the bundle, eg. 'data_bundle'",
+                            },
+                        },
+                        "required": [
+                            "phone_number",
+                            "bundle",
+                            "provider",
+                            "plan",
+                            "product_name",
+                        ],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "make_voice_call",
+                    "description": "Initiate a voice call between two numbers using Africa's Talking API",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "from_number": {
+                                "type": "string",
+                                "description": "The caller ID",
+                            },
+                            "to_number": {
+                                "type": "string",
+                                "description": "The recipient phone number",
+                            },
+                        },
+                        "required": ["from_number", "to_number"],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_wallet_balance",
+                    "description": "Fetch the current wallet balance from Africa's Talking account",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {},
+                        "required": [],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "make_voice_call_with_text",
+                    "description": "Make a voice call and say a message using text-to-speech with Africa's Talking API",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "from_number": {
+                                "type": "string",
+                                "description": "The caller ID",
+                            },
+                            "to_number": {
+                                "type": "string",
+                                "description": "The recipient phone number",
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "The text message to be spoken during the call",
+                            },
+                            "voice_type": {
+                                "type": "string",
+                                "description": "The voice type to use ('man' or 'woman')",
+                                "default": "woman",
+                            },
+                        },
+                        "required": ["from_number", "to_number", "message"],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "make_voice_call_and_play_audio",
+                    "description": "Make a voice call and play a message using Africa's Talking API",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "from_number": {
+                                "type": "string",
+                                "description": "The caller ID",
+                            },
+                            "to_number": {
+                                "type": "string",
+                                "description": "The recipient phone number",
+                            },
+                            "audio_url": {
+                                "type": "string",
+                                "description": "The URL of the audio file to play",
+                            },
+                        },
+                        "required": ["from_number", "to_number", "audio_url"],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_application_balance",
+                    "description": "Get application balance from Africa's Talking account",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "sandbox": {
+                                "type": "boolean",
+                                "description": "Whether to use sandbox endpoint",
+                                "default": False,
+                            },
+                        },
+                        "required": [],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "send_whatsapp_message",
+                    "description": "Send a WhatsApp message using Africa's Talking API",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "wa_number": {
+                                "type": "string",
+                                "description": "The WhatsApp phone number associated with your AT account (sender)",
+                            },
+                            "phone_number": {
+                                "type": "string",
+                                "description": "The recipient's phone number",
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "The text message to send",
+                            },
+                            "media_type": {
+                                "type": "string",
+                                "description": "The type of media (Image, Video, Audio, Voice)",
+                            },
+                            "url": {
+                                "type": "string",
+                                "description": "The hosted URL of the media",
+                            },
+                            "caption": {
+                                "type": "string",
+                                "description": "The caption for the media",
+                            },
+                            "sandbox": {
+                                "type": "boolean",
+                                "description": "Use sandbox endpoint if True",
+                                "default": False,
+                            },
+                        },
+                        "required": ["wa_number", "phone_number"],
+                    },
+                },
+            },
         ],
     )
     # Add the model's response to the conversation history
@@ -475,6 +1233,14 @@ async def run(model: str, user_input: str):
             "send_message": send_message,
             "search_news": search_news,
             "translate_text": translate_text,
+            "send_ussd": send_ussd,
+            "send_mobile_data": send_mobile_data_wrapper,  # Use the wrapper function here
+            "make_voice_call": make_voice_call,
+            "make_voice_call_with_text": make_voice_call_with_text,
+            "make_voice_call_and_play_audio": make_voice_call_and_play_audio,
+            "get_wallet_balance": get_wallet_balance,
+            "get_application_balance": get_application_balance,
+            "send_whatsapp_message": send_whatsapp_message,
         }
         for tool in response["message"]["tool_calls"]:
             # Get the function to call based on the tool name
@@ -507,6 +1273,60 @@ async def run(model: str, user_input: str):
                 function_response = function_to_call(
                     tool["function"]["arguments"]["text"],
                     tool["function"]["arguments"]["target_language"],
+                )
+                logger.debug("function response: %s", function_response)
+            elif tool["function"]["name"] == "send_ussd":
+                function_response = function_to_call(
+                    tool["function"]["arguments"]["phone_number"],
+                    tool["function"]["arguments"]["code"],
+                )
+                logger.debug("function response: %s", function_response)
+            elif tool["function"]["name"] == "send_mobile_data":
+                function_response = function_to_call(
+                    tool["function"]["arguments"]["phone_number"],
+                    tool["function"]["arguments"]["bundle"],
+                    tool["function"]["arguments"]["provider"],
+                    tool["function"]["arguments"]["plan"],
+                )
+                logger.debug("function response: %s", function_response)
+            elif tool["function"]["name"] == "make_voice_call":
+                function_response = function_to_call(
+                    tool["function"]["arguments"]["from_number"],
+                    tool["function"]["arguments"]["to_number"],
+                )
+                logger.debug("function response: %s", function_response)
+            elif tool["function"]["name"] == "make_voice_call_with_text":
+                function_response = function_to_call(
+                    tool["function"]["arguments"]["from_number"],
+                    tool["function"]["arguments"]["to_number"],
+                    tool["function"]["arguments"]["message"],
+                    voice_type=tool["function"]["arguments"].get("voice_type", "woman"),
+                )
+                logger.debug("function response: %s", function_response)
+            elif tool["function"]["name"] == "get_wallet_balance":
+                function_response = function_to_call()
+                logger.debug("function response: %s", function_response)
+            elif tool["function"]["name"] == "make_voice_call_and_play_audio":
+                function_response = function_to_call(
+                    tool["function"]["arguments"]["from_number"],
+                    tool["function"]["arguments"]["to_number"],
+                    tool["function"]["arguments"]["audio_url"],
+                )
+                logger.debug("function response: %s", function_response)
+            elif tool["function"]["name"] == "get_application_balance":
+                function_response = function_to_call(
+                    tool["function"]["arguments"].get("sandbox", False),
+                )
+                logger.debug("function response: %s", function_response)
+            elif tool["function"]["name"] == "send_whatsapp_message":
+                function_response = function_to_call(
+                    tool["function"]["arguments"]["wa_number"],
+                    tool["function"]["arguments"]["phone_number"],
+                    tool["function"]["arguments"].get("message"),
+                    tool["function"]["arguments"].get("media_type"),
+                    tool["function"]["arguments"].get("url"),
+                    tool["function"]["arguments"].get("caption"),
+                    tool["function"]["arguments"].get("sandbox", False),
                 )
                 logger.debug("function response: %s", function_response)
 
