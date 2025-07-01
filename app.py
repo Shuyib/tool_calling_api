@@ -16,19 +16,19 @@ Examples (Use these exact prompts for best results):
     Send airtime to a phone number:
         - `Send airtime to +254712345678 with an amount of 10 in currency KES`
         - `Send 50 KES airtime to +254701234567`
-    
+
     Send SMS messages:
         - `Send a message to +254712345678 with the message 'Hello there', using the username 'sandbox'`
         - `Send SMS 'Meeting at 3PM today' to +254701234567 using username testuser`
-    
+
     Send USSD codes:
         - `Send USSD code *544# to +254712345678`
         - `Check balance with USSD *100# for +254701234567`
-    
+
     Send mobile data bundles:
         - `Send 500MB data bundle to +254712345678 using provider Safaricom with plan daily`
         - `Send 1GB data to +254701234567 using Airtel provider with weekly plan`
-    
+
     Make voice calls:
         - `Make a voice call from +254712345678 to +254798765432`
         - `Call +254701234567 from +254787654321`
@@ -36,21 +36,21 @@ Examples (Use these exact prompts for best results):
         - `Call +254701234567 from +254787654321 and say "Your appointment is confirmed for tomorrow at 2 PM"`
         - `Make a voice call from +254700000001 to +254712345678 and play audio from https://example.com/audio.mp3`
         - `Call +254701234567 from +254787654321 and play https://github.com/runpod-workers/sample-inputs/raw/main/audio/gettysburg.wav`
-    
+
     Check account balances:
         - `Check my wallet balance`
         - `Get my application balance`
         - `Show application balance from sandbox`
-    
+
     Send WhatsApp messages:
         - `Send WhatsApp message from +254799999999 to +254700000000 with message "Hello via WhatsApp!"`
         - `Send WhatsApp image from +254799999999 to +254700000000 with media type Image and URL https://example.com/image.jpg`
-    
+
     Search for news:
         - `Latest news on climate change`
         - `Search news about artificial intelligence developments`
         - `Find recent news on renewable energy`
-    
+
     Translate text:
         - `Translate the text 'Hello' to the target language 'French'`
         - `Translate 'Good morning' to Spanish`
