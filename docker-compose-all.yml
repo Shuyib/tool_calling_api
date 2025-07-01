@@ -1,0 +1,70 @@
+services:
+  # Ollama service
+  ollama:
+    # Build the Ollama image from the Dockerfile.ollama
+    build:
+      context: .
+      dockerfile: Dockerfile.ollama
+    container_name: ollama-server
+    # Security options to enhance container security
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    # Expose port 11434 for the Ollama service
+    ports:
+      - "11434:11434"
+    # Mount a volume for model persistence
+    volumes:
+      - ollama_models:/models
+
+  # Voice callback server service
+  voice-server:
+    # Build the voice server image from the Dockerfile.voice
+    build:
+      context: .
+      dockerfile: Dockerfile.voice
+    container_name: voice-callback-server
+    # Environment variables for the voice callback server
+    environment:
+      - AT_USERNAME=${AT_USERNAME}
+      - AT_API_KEY=${AT_API_KEY}
+    # Expose port 5001 for the voice callback server
+    ports:
+      - "5001:5001"
+    # Add health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Gradio app service
+  app:
+    # Build the Gradio app image from the Dockerfile.app
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    container_name: gradio-app
+    # Environment variables for the Gradio app
+    environment:
+      - AT_USERNAME=${AT_USERNAME}
+      - AT_API_KEY=${AT_API_KEY}
+      - LANGTRACE_API_KEY=${LANGTRACE_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - OLLAMA_HOST=http://ollama:11434
+      - VOICE_CALLBACK_URL=${VOICE_CALLBACK_URL:-http://voice-server:5001}
+    # Expose port 7860 for the Gradio web interface
+    ports:
+      - "7860:7860"
+    # Ensure the Ollama service and voice server are started before the Gradio app
+    depends_on:
+      - ollama
+      - voice-server
+
+# Define a volume for model persistence
+volumes:
+  ollama_models:
