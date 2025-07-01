@@ -42,7 +42,7 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 
 
 ## File structure
-.
+.    
 ├── Dockerfile.app - template to run the gradio dashboard.   
 ├── Dockerfile.ollama - template to run the ollama server.    
 ├── Dockerfile.voice - template to run the voice callback server.   
