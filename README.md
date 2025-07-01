@@ -11,8 +11,8 @@ Here are examples of prompts you can use:
 - Send a message to xxxxxxxxx2046 and xxxxxxxxx3524 with a message "Hello, how are you?", using the username "username".
 - Dial a USSD code like *123# on xxxxxxxxx2046 *(requires approval)*
 - Send 500MB of data to xxxxxxxxx2046 on provider safaricom *(requires business approval)*
-- Call xxxxxxxxx2046 from +254700000001 *(requires production account with registered caller ID)*
-- **NEW**: Make a voice call from +254700000001 to +254712345678 and say "Hello, this is a test message" *(with callback server setup)*
+- Call xxxxxxxxx2046 from xxxxxxxxx0001 *(requires production account with registered caller ID)*
+- **NEW**: Make a voice call from xxxxxxxxx0001 to xxxxxxxxx5678 and say "Hello, this is a test message" *(with callback server setup)*
 
 NB: The phone numbers are placeholders for the actual phone numbers.
 You need some VRAM to run this project. You can get VRAM from [here](https://vast.ai/) or [here](https://runpod.io?ref=46wgtjpg)
