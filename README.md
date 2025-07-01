@@ -127,7 +127,7 @@ cd utils
 ```bash
 python function_call.py
 ```
-- Run the Gradion UI instead
+- Run the Gradio UI instead
 ```bash
 python ../app.py
 ```
