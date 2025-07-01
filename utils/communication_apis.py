@@ -28,12 +28,12 @@ Make a voice call
  "Queued"}], "errorMessage": "None"}'
 
 Make a voice call with text
-{'entries': [{'phoneNumber': '+254728303524', 'sessionId': 'ATVId_xxxx', 
-'status': 'Queued'}], 'errorMessage': 'None', 
-'xml_response': '<?xml version="1.0"?>\n<Response>\n    
-<Say voice="woman">Hello, this is a test message</Say>\n</Response>', 
-'session_id': '1dbd2e4e-20be-4971-9455-dfed5fe5552c', 'callback_url': 
-'https://80c4-165-73-248-94.ngrok-free.app/voice/callback'}
+{'entries': [{'phoneNumber': '+254728303524', 'sessionId': 'ATVId_xxxx',
+'status': 'Queued'}], 'errorMessage': 'None',
+'xml_response': '<?xml version="1.0"?>\n<Response>\n
+<Say voice="woman">Hello, this is a test message</Say>\n</Response>',
+'session_id': '1dbd2e4e-20be-4971-9455-dfed5fe5552c', 'callback_url':
+'https://<url>.ngrok-free.app/voice/callback'}
 """
 
 import os
