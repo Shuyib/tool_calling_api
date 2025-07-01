@@ -3,7 +3,7 @@
 Function-calling with Python and ollama. We are going to use the Africa's Talking API to send airtime and messages to a phone number using Natural language. Thus, creating an generative ai agent.
 
 ## Available Services
-✅ **Currently Working**: SMS/Messages, Airtime, Voice Calls with Text-to-Speech**
+✅ **Currently Working**: SMS/Messages, Airtime, Voice Calls with Text-to-Speech**    
 ⚠️ **Requires Approval**: Voice Calls (production account), Mobile Data (business approval)
 
 Here are examples of prompts you can use:
@@ -43,32 +43,32 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 
 ## File structure
 .
-├── Dockerfile.app - template to run the gradio dashboard.
-├── Dockerfile.ollama - template to run the ollama server.
-├── Dockerfile.voice - template to run the voice callback server.
-├── docker-compose.yml - use the ollama project, gradio dashboard, and voice server.
-├── docker-compose-codecarbon.yml - use the codecarbon project, ollama and gradio dashboard.
-├── DOCKER_VOICE_SETUP.md - Comprehensive guide for Docker voice functionality setup.
-├── .env - This file contains the environment variables for the project. (Not included in the repository)
-├── app.py - the function_call.py using gradio as the User Interface.
-├── Makefile - This file contains the commands to run the project.
-├── README.md - This file contains the project documentation. This is the file you are currently reading.
-├── requirements.txt - This file contains the dependencies for the project.
-├── requirements-dev.txt - This filee contains the dependecies for the devcontainer referencing `requirements.txt`
-├── summary.png - How function calling works with a diagram.
-├── setup_voice_server.md - Step-by-step guide for setting up voice callbacks with text-to-speech.
-├── voice_callback_server.py - Flask server that handles voice callbacks for custom text-to-speech messages.
-├── tests - This directory contains the test files for the project.
-│   ├── __init__.py - This file initializes the tests directory as a package.
-│   ├── test_cases.py - This file contains the test cases for the project.
-│   └── test_run.py - This file contains the code to run the test cases for the function calling LLM.
-└── utils - This directory contains the utility files for the project.
-│    ├── __init__.py - This file initializes the utils directory as a package.
-│    ├── function_call.py - This file contains the code to call a function using LLMs.
-│    └── communication_apis.py - This file contains the code to do with communication apis & experiments.
-|    └── models.py - This file contains pydantic schemas for vision models.
-|    └── constants.py - This file contains system prompts to adjust the model's behavior.
-└── voice_stt_mode.py - Gradio tabbed interface with Speech-to-text interface that allows edits and a text interface.
+├── Dockerfile.app - template to run the gradio dashboard.   
+├── Dockerfile.ollama - template to run the ollama server.    
+├── Dockerfile.voice - template to run the voice callback server.   
+├── docker-compose.yml - use the ollama project, gradio dashboard, and voice server.   
+├── docker-compose-codecarbon.yml - use the codecarbon project, ollama and gradio dashboard.   
+├── DOCKER_VOICE_SETUP.md - Comprehensive guide for Docker voice functionality setup.   
+├── .env - This file contains the environment variables for the project. (Not included in the repository)   
+├── app.py - the function_call.py using gradio as the User Interface.   
+├── Makefile - This file contains the commands to run the project.   
+├── README.md - This file contains the project documentation. This is the file you are currently reading.   
+├── requirements.txt - This file contains the dependencies for the project.   
+├── requirements-dev.txt - This filee contains the dependecies for the devcontainer referencing `requirements.txt`   
+├── summary.png - How function calling works with a diagram.   
+├── setup_voice_server.md - Step-by-step guide for setting up voice callbacks with text-to-speech.   
+├── voice_callback_server.py - Flask server that handles voice callbacks for custom text-to-speech messages.   
+├── tests - This directory contains the test files for the project.   
+│   ├── __init__.py - This file initializes the tests directory as a package.   
+│   ├── test_cases.py - This file contains the test cases for the project.   
+│   └── test_run.py - This file contains the code to run the test cases for the function calling LLM.   
+└── utils - This directory contains the utility files for the project.   
+│    ├── __init__.py - This file initializes the utils directory as a package.   
+│    ├── function_call.py - This file contains the code to call a function using LLMs.   
+│    └── communication_apis.py - This file contains the code to do with communication apis & experiments.   
+|    └── models.py - This file contains pydantic schemas for vision models.   
+|    └── constants.py - This file contains system prompts to adjust the model's behavior.   
+└── voice_stt_mode.py - Gradio tabbed interface with Speech-to-text interface that allows edits and a text interface.   
 
 ## Attribution
 * This project uses the Qwen3-0.6B model developed by Alibaba Cloud under the Apache License 2.0. The original project can be found at [Qwen technical report](https://arxiv.org/abs/2412.15115)
