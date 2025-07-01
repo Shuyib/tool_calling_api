@@ -23,4 +23,4 @@ deprecated==1.2.18
 pydantic==2.9.2
 flask==3.0.0
 flask-cors==4.0.0
-requests==2.31.0
+requests==2.32.4
