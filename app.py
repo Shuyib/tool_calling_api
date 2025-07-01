@@ -12,15 +12,51 @@ Usage:
     3. Access the Gradio web interface to send airtime or messages or search for
     news articles.
 
-Example:
+Examples (Use these exact prompts for best results):
     Send airtime to a phone number:
         - `Send airtime to +254712345678 with an amount of 10 in currency KES`
-    Send a message to a phone number:
-        - `Send a message to +254712345678 with the message 'Hello there',
-        using the username 'username'`
-    Search for news about a topic:
+        - `Send 50 KES airtime to +254701234567`
+    
+    Send SMS messages:
+        - `Send a message to +254712345678 with the message 'Hello there', using the username 'sandbox'`
+        - `Send SMS 'Meeting at 3PM today' to +254701234567 using username testuser`
+    
+    Send USSD codes:
+        - `Send USSD code *544# to +254712345678`
+        - `Check balance with USSD *100# for +254701234567`
+    
+    Send mobile data bundles:
+        - `Send 500MB data bundle to +254712345678 using provider Safaricom with plan daily`
+        - `Send 1GB data to +254701234567 using Airtel provider with weekly plan`
+    
+    Make voice calls:
+        - `Make a voice call from +254712345678 to +254798765432`
+        - `Call +254701234567 from +254787654321`
+        - `Make a voice call from +254700000001 to +254712345678 and say "Hello, this is a test message"`
+        - `Call +254701234567 from +254787654321 and say "Your appointment is confirmed for tomorrow at 2 PM"`
+        - `Make a voice call from +254700000001 to +254712345678 and play audio from https://example.com/audio.mp3`
+        - `Call +254701234567 from +254787654321 and play https://github.com/runpod-workers/sample-inputs/raw/main/audio/gettysburg.wav`
+    
+    Check account balances:
+        - `Check my wallet balance`
+        - `Get my application balance`
+        - `Show application balance from sandbox`
+    
+    Send WhatsApp messages:
+        - `Send WhatsApp message from +254799999999 to +254700000000 with message "Hello via WhatsApp!"`
+        - `Send WhatsApp image from +254799999999 to +254700000000 with media type Image and URL https://example.com/image.jpg`
+    
+    Search for news:
         - `Latest news on climate change`
+        - `Search news about artificial intelligence developments`
+        - `Find recent news on renewable energy`
+    
+    Translate text:
         - `Translate the text 'Hello' to the target language 'French'`
+        - `Translate 'Good morning' to Spanish`
+        - `Convert 'Thank you' to Swahili`
+
+Note: All API calls and responses are logged to 'func_calling_app.log' in the application directory for debugging purposes.
 """
 
 # ------------------------------------------------------------------------------------
@@ -39,9 +75,23 @@ from importlib.metadata import version, PackageNotFoundError
 import gradio as gr
 from langtrace_python_sdk import langtrace, with_langtrace_root_span
 import ollama
-from utils.function_call import send_airtime, send_message, search_news, translate_text
+from utils.function_call import (
+    send_airtime,
+    send_message,
+    search_news,
+    translate_text,
+    send_ussd,
+    make_voice_call,
+    make_voice_call_with_text,
+    make_voice_call_and_play_audio,
+    get_wallet_balance,
+    get_application_balance,
+    send_whatsapp_message,
+)
 from utils.constants import VISION_SYSTEM_PROMPT, API_SYSTEM_PROMPT
 from utils.models import ReceiptData, LineItem
+from utils.communication_apis import send_mobile_data_wrapper
+
 
 # ------------------------------------------------------------------------------------
 # Logging Configuration
@@ -260,6 +310,205 @@ tools = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "send_ussd",
+            "description": "Send a USSD code to a phone number using the Africa's Talking API",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "phone_number": {
+                        "type": "string",
+                        "description": "The phone number in international format",
+                    },
+                    "code": {
+                        "type": "string",
+                        "description": "The USSD code to dial",
+                    },
+                },
+                "required": ["phone_number", "code"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "send_mobile_data",
+            "description": "Send a mobile data bundle using the Africa's Talking API. The bundle can be specified as a string (e.g., '50', '500MB', or '1GB'). If a number is provided, it is interpreted as MB.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "phone_number": {
+                        "type": "string",
+                        "description": "The phone number in international format (e.g., '+254728303524')",
+                    },
+                    "bundle": {
+                        "type": "string",
+                        "description": "The bundle amount as a string. Examples: '50' (for 50MB), '500MB', '1GB'. If a number is provided, it is interpreted as MB.",
+                    },
+                    "provider": {
+                        "type": "string",
+                        "description": "The mobile network provider (e.g., 'Safaricom', 'Airtel')",
+                    },
+                    "plan": {
+                        "type": "string",
+                        "description": "The plan duration. Must be one of: 'daily', 'weekly', 'monthly' (case insensitive). Do not use bundle sizes here.",
+                        "enum": ["daily", "weekly", "monthly", "day", "week", "month"],
+                    },
+                },
+                "required": ["phone_number", "bundle", "provider", "plan"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "make_voice_call",
+            "description": "Initiate a voice call between two numbers using Africa's Talking API",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "from_number": {
+                        "type": "string",
+                        "description": "The caller ID",
+                    },
+                    "to_number": {
+                        "type": "string",
+                        "description": "The recipient phone number",
+                    },
+                },
+                "required": ["from_number", "to_number"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_wallet_balance",
+            "description": "Fetch the current wallet balance from Africa's Talking account",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "make_voice_call_with_text",
+            "description": "Make a voice call and say a message using text-to-speech with Africa's Talking API",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "from_number": {
+                        "type": "string",
+                        "description": "The caller ID",
+                    },
+                    "to_number": {
+                        "type": "string",
+                        "description": "The recipient phone number",
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "The text message to be spoken during the call",
+                    },
+                    "voice_type": {
+                        "type": "string",
+                        "description": "The voice type to use ('man' or 'woman')",
+                        "default": "woman",
+                    },
+                },
+                "required": ["from_number", "to_number", "message"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "make_voice_call_and_play_audio",
+            "description": "Make a voice call and play an audio file from a URL using Africa's Talking API",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "from_number": {
+                        "type": "string",
+                        "description": "The caller ID",
+                    },
+                    "to_number": {
+                        "type": "string",
+                        "description": "The recipient phone number",
+                    },
+                    "audio_url": {
+                        "type": "string",
+                        "description": "The public URL of the audio file to play (must be a direct HTTP/HTTPS URL to MP3, WAV, etc.)",
+                    },
+                },
+                "required": ["from_number", "to_number", "audio_url"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_application_balance",
+            "description": "Get application balance from Africa's Talking account using the Application Data endpoint",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "sandbox": {
+                        "type": "boolean",
+                        "description": "Whether to use sandbox endpoint",
+                        "default": False,
+                    },
+                },
+                "required": [],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "send_whatsapp_message",
+            "description": "Send a WhatsApp message using Africa's Talking API",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "wa_number": {
+                        "type": "string",
+                        "description": "The WhatsApp phone number associated with your AT account (sender)",
+                    },
+                    "phone_number": {
+                        "type": "string",
+                        "description": "The recipient's phone number",
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "The text message to send",
+                    },
+                    "media_type": {
+                        "type": "string",
+                        "description": "The type of media (Image, Video, Audio, Voice)",
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "The hosted URL of the media",
+                    },
+                    "caption": {
+                        "type": "string",
+                        "description": "The caption for the media",
+                    },
+                    "sandbox": {
+                        "type": "boolean",
+                        "description": "Use sandbox endpoint if True",
+                        "default": False,
+                    },
+                },
+                "required": ["wa_number", "phone_number"],
+            },
+        },
+    },
 ]
 
 # ------------------------------------------------------------------------------------
@@ -316,7 +565,7 @@ async def process_user_message(
 
     try:
         # Select model based on vision flag
-        model_name = "llama3.2-vision" if use_vision else "qwen2.5:0.5b"
+        model_name = "llama3.2-vision" if use_vision else "qwen3:0.6b"
 
         response = await client.chat(
             model=model_name,
@@ -388,6 +637,84 @@ async def process_user_message(
                         arguments["text"],
                         arguments["target_language"],
                     )
+                elif tool_name == "send_ussd":
+                    logger.info("Calling send_ussd with arguments: %s", masked_args)
+                    function_response = send_ussd(
+                        arguments["phone_number"],
+                        arguments["code"],
+                    )
+                elif tool_name == "send_mobile_data":
+                    logger.info(
+                        "Calling send_mobile_data with arguments: %s",
+                        masked_args,
+                    )
+                    # Check if credentials are available
+                    if not os.getenv("AT_USERNAME") or not os.getenv("AT_API_KEY"):
+                        return json.dumps(
+                            {
+                                "error": "Missing AT_USERNAME or AT_API_KEY environment variables"
+                            }
+                        )
+                    function_response = send_mobile_data_wrapper(
+                        phone_number=arguments["phone_number"],
+                        bundle=arguments["bundle"],
+                        provider=arguments["provider"],
+                        plan=arguments["plan"],
+                    )
+                elif tool_name == "make_voice_call":
+                    logger.info(
+                        "Calling make_voice_call with arguments: %s", masked_args
+                    )
+                    function_response = make_voice_call(
+                        arguments["from_number"],
+                        arguments["to_number"],
+                    )
+                elif tool_name == "get_wallet_balance":
+                    logger.info("Calling get_wallet_balance")
+                    function_response = get_wallet_balance()
+                elif tool_name == "make_voice_call_with_text":
+                    logger.info(
+                        "Calling make_voice_call_with_text with arguments: %s",
+                        masked_args,
+                    )
+                    function_response = make_voice_call_with_text(
+                        arguments["from_number"],
+                        arguments["to_number"],
+                        arguments["message"],
+                        arguments.get("voice_type", "woman"),
+                    )
+                elif tool_name == "make_voice_call_and_play_audio":
+                    logger.info(
+                        "Calling make_voice_call_and_play_audio with arguments: %s",
+                        masked_args,
+                    )
+                    function_response = make_voice_call_and_play_audio(
+                        arguments["from_number"],
+                        arguments["to_number"],
+                        arguments["audio_url"],
+                    )
+                elif tool_name == "get_application_balance":
+                    logger.info(
+                        "Calling get_application_balance with arguments: %s",
+                        masked_args,
+                    )
+                    function_response = get_application_balance(
+                        arguments.get("sandbox", False),
+                    )
+                elif tool_name == "send_whatsapp_message":
+                    logger.info(
+                        "Calling send_whatsapp_message with arguments: %s",
+                        masked_args,
+                    )
+                    function_response = send_whatsapp_message(
+                        arguments["wa_number"],
+                        arguments["phone_number"],
+                        arguments.get("message"),
+                        arguments.get("media_type"),
+                        arguments.get("url"),
+                        arguments.get("caption"),
+                        arguments.get("sandbox", False),
+                    )
                 else:
                     function_response = json.dumps({"error": "Unknown function"})
                     logger.warning("Unknown function: %s", tool_name)
@@ -447,9 +774,17 @@ iface = gr.ChatInterface(
     title="📱 Multi-Service Communication Interface 🌍",
     description=(
         "Welcome to the Airtime and Messaging Service using Africa's Talking API! 🎉\n\n"
-        "You can send airtime or messages by typing commands such as:\n"
+        "You can send airtime, messages, USSD codes, mobile data, make voice calls, send WhatsApp messages, or check your account balance by typing commands such as:\n"
         "- `Send airtime to +254712345678 with an amount of 10 in currency KES` 📞\n"
         "- `Send a message to +254712345678 with the message 'Hello there', using the username 'username'` 💬\n"
+        "- `Send USSD code *544# to +254712345678` 📱\n"
+        "- `Send 500MB data bundle to +254712345678 using provider Safaricom with plan daily` 📶\n"
+        "- `Make a voice call from +254712345678 to +254798765432` ☎️\n"
+        "- `Make a voice call from +254700000001 to +254712345678 and say 'Hello, this is a test message'` 🗣️\n"
+        "- `Make a voice call from +254700000001 to +254712345678 and play audio from https://github.com/runpod-workers/sample-inputs/raw/main/audio/gettysburg.wav` 🎵\n"
+        "- `Check my wallet balance` 💰\n"
+        "- `Get my application balance` 🏦\n"
+        "- `Send WhatsApp message from +254799999999 to +254700000000 with message 'Hello via WhatsApp!'` 💻\n"
         "- `Search news for 'latest technology trends'` 📰\n\n"
         "You can also translate text to a target language by typing:\n"
         "- `Translate the text 'Hi' to the target language 'French'` 🌐\n\n"
@@ -459,6 +794,22 @@ iface = gr.ChatInterface(
         ["Send airtime to +254712345678 with an amount of 10 in currency KES"],
         [
             "Send a message to +254712345678 with the message 'Hello there', using the username 'username'"
+        ],
+        ["Send USSD code *544# to +254712345678"],
+        [
+            "Send 500MB data bundle to +254712345678 using provider Safaricom with plan daily"
+        ],
+        ["Make a voice call from +254712345678 to +254798765432"],
+        [
+            "Make a voice call from +254700000001 to +254712345678 and say 'Hello, this is a test message'"
+        ],
+        [
+            "Make a voice call from +254700000001 to +254712345678 and play audio from https://github.com/runpod-workers/sample-inputs/raw/main/audio/gettysburg.wav"
+        ],
+        ["Check my wallet balance"],
+        ["Get my application balance. I am using a regular account"],
+        [
+            "Send WhatsApp message from +254799999999 to +254700000000 with message 'Hello via WhatsApp!'"
         ],
         ["Search news for 'latest technology trends'"],
         ["Translate the text 'Hi' to the target language 'French'"],
@@ -481,6 +832,9 @@ if __name__ == "__main__":
     # Log the end of the script
     logger.info("Script execution completed.")
 
+    # Flush logs to ensure all logs are written out
+    for handler in logger.handlers:
+        handler.flush()
     # Flush logs to ensure all logs are written out
     for handler in logger.handlers:
         handler.flush()
