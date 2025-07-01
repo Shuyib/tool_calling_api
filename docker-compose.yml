@@ -1,0 +1,46 @@
+services:
+  # Ollama service
+  ollama:
+    # Build the Ollama image from the Dockerfile.ollama
+    build:
+      context: .
+      dockerfile: Dockerfile.ollama
+    container_name: ollama-server
+    # Security options to enhance container security
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    # Expose port 11434 for the Ollama service
+    ports:
+      - "11434:11434"
+    # Mount a volume for model persistence
+    volumes:
+      - ollama_models:/models
+
+  # Gradio app service
+  app:
+    # Build the Gradio app image from the Dockerfile.app
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    container_name: gradio-app
+    # Environment variables for the Gradio app
+    environment:
+      - AT_USERNAME=${AT_USERNAME}
+      - AT_API_KEY=${AT_API_KEY}
+      - LANGTRACE_API_KEY=${LANGTRACE_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - OLLAMA_HOST=http://ollama:11434
+    # Expose port 7860 for the Gradio web interface
+    ports:
+      - "7860:7860"
+    # Ensure the Ollama service is started before the Gradio app
+    depends_on:
+      - ollama
+
+# Define a volume for model persistence
+volumes:
+  ollama_models:
