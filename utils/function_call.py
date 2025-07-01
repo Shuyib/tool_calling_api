@@ -35,7 +35,7 @@ from pydantic import BaseModel, field_validator, ValidationError
 from typing import Union
 from typing import Optional
 import re
-from communication_apis import send_mobile_data_wrapper, send_mobile_data_original
+from .communication_apis import send_mobile_data_wrapper, send_mobile_data_original
 
 # from codecarbon import EmissionsTracker  # Import the EmissionsTracker
 from duckduckgo_search import DDGS
