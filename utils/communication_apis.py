@@ -40,30 +40,58 @@ import os
 import json
 import requests
 import logging
+from logging.handlers import RotatingFileHandler
 from importlib.metadata import version
 import africastalking
 from pydantic import BaseModel, field_validator
 from typing import Union, List, Dict, Any, Optional
 
 
-# set up the logger
-logger = logging.getLogger(__name__)
+def setup_logger():
+    """Sets up the logger with file and stream handlers.
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
+    Parameters
+    ----------
+    None
 
-# logging format
-formatter = logging.Formatter("%(asctime)s:%(name)s:%(message)s")
+    Returns
+    -------
 
-# set up the file handler & stream handler
-file_handler = logging.FileHandler("communication_apis.log")
-file_handler.setFormatter(formatter)
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
+    logger: logging.Logger
+        The logger object with the configured handlers.
 
-# add the file handler to the logger
-logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
+    """
+
+    # Create a logger
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)  # Capture all levels DEBUG and above
+
+    # Prevent logs from being propagated to the root logger to avoid duplication
+    logger.propagate = False
+
+    # Define logging format
+    formatter = logging.Formatter("%(asctime)s:%(name)s:%(levelname)s:%(message)s")
+
+    # Set up the Rotating File Handler
+    # the log file will be rotated when it reaches 5MB and will keep the last 5 logs
+    file_handler = RotatingFileHandler(
+        "communication_apis.log", maxBytes=5 * 1024 * 1024, backupCount=5
+    )
+    file_handler.setLevel(logging.INFO)  # Capture INFO and above in the file
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    # Set up the Stream Handler for console output
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(logging.DEBUG)  # Capture DEBUG and above in the console
+    stream_handler.setFormatter(formatter)
+    logger.addHandler(stream_handler)
+
+    return logger
+
+
+# Initialize logger
+logger = setup_logger()
 
 
 class SendMobileDataRequest(BaseModel):

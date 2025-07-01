@@ -24,6 +24,7 @@ You'll be prompted your computer password for codecarbon to track emissions.
 import os
 import json
 import logging
+from logging.handlers import RotatingFileHandler
 from importlib.metadata import version
 import asyncio
 import africastalking
@@ -34,29 +35,57 @@ from pydantic import BaseModel, field_validator, ValidationError
 from typing import Union
 from typing import Optional
 import re
-from .communication_apis import send_mobile_data_wrapper, send_mobile_data_original
+from communication_apis import send_mobile_data_wrapper, send_mobile_data_original
 
 # from codecarbon import EmissionsTracker  # Import the EmissionsTracker
 from duckduckgo_search import DDGS
 
-# Set up the logger
-logger = logging.getLogger(__name__)
 
-# Set up logging
-logging.basicConfig(level=logging.DEBUG)
+def setup_logger():
+    """Sets up the logger with file and stream handlers.
 
-# Logging format
-formatter = logging.Formatter("%(asctime)s:%(name)s:%(message)s")
+    Parameters
+    ----------
+    None
 
-# Set up the file handler & stream handler
-file_handler = logging.FileHandler("func_calling.log")
-file_handler.setFormatter(formatter)
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
+    Returns
+    -------
 
-# Add the file handler to the logger
-logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
+    logger: logging.Logger
+        The logger object with the configured handlers.
+
+    """
+
+    # Create a logger
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)  # Capture all levels DEBUG and above
+
+    # Prevent logs from being propagated to the root logger to avoid duplication
+    logger.propagate = False
+
+    # Define logging format
+    formatter = logging.Formatter("%(asctime)s:%(name)s:%(levelname)s:%(message)s")
+
+    # Set up the Rotating File Handler
+    # the log file will be rotated when it reaches 5MB and will keep the last 5 logs
+    file_handler = RotatingFileHandler(
+        "func_calling.log", maxBytes=5 * 1024 * 1024, backupCount=5
+    )
+    file_handler.setLevel(logging.INFO)  # Capture INFO and above in the file
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    # Set up the Stream Handler for console output
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(logging.DEBUG)  # Capture DEBUG and above in the console
+    stream_handler.setFormatter(formatter)
+    logger.addHandler(stream_handler)
+
+    return logger
+
+
+# Initialize logger
+logger = setup_logger()
 
 # Flush logs
 for handler in logger.handlers:
@@ -85,6 +114,35 @@ for handler in logger.handlers:
 
 # Set the region explicitly to East Africa
 os.environ["CODECARBON_REGION"] = "africa_east"
+
+
+class SendSMSRequest(BaseModel):
+    phone_number: str
+    message: str
+    username: str
+
+    @field_validator("phone_number")
+    @classmethod
+    def validate_phone_number(cls, v):
+        if not v or not v.startswith("+"):
+            raise ValueError(
+                "phone_number must be in international format, e.g. +254712345678"
+            )
+        return v
+
+    @field_validator("message")
+    @classmethod
+    def validate_message(cls, v):
+        if not v or len(v.strip()) == 0:
+            raise ValueError("message cannot be empty")
+        return v
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, v):
+        if not v or len(v.strip()) == 0:
+            raise ValueError("username cannot be empty")
+        return v
 
 
 class SendMobileDataRequest(BaseModel):
@@ -385,6 +443,7 @@ def send_message(phone_number: str, message: str, username: str, **kwargs) -> st
     send_message("+254712345678", "Hello there", "jak2")
 
     """
+    # Remove the fallback relative import, which causes issues when run as a script
     try:
         validated = SendSMSRequest(
             phone_number=phone_number, message=message, username=username
@@ -394,7 +453,8 @@ def send_message(phone_number: str, message: str, username: str, **kwargs) -> st
         return str(ve)
 
     try:
-        from .communication_apis import send_message as comm_send_message
+        # Use absolute import for communication_apis to avoid relative import errors
+        from communication_apis import send_message as comm_send_message
 
         masked_number = mask_phone_number(phone_number)
         logger.info("Delegating message sending to %s", masked_number)
@@ -772,12 +832,13 @@ def send_whatsapp_message(
         return json.dumps({"error": str(e)})
 
 
-def search_news(query: str, **kwargs) -> str:
+def search_news(query: str, max_results: int = 5, **kwargs) -> str:
     """Search for news using DuckDuckGo search engine based on the query provided.
 
     Parameters
     ----------
     query: str : The query to search for.
+    max_results: int : The maximum number of news articles to retrieve.
 
     Returns
     -------
@@ -789,12 +850,14 @@ def search_news(query: str, **kwargs) -> str:
     """
     logging.info("Searching for news based on the query: %s", query)
     ddgs = DDGS()
+    # Remove max_results from kwargs if present to avoid duplicate argument
+    kwargs.pop("max_results", None)
     results = ddgs.news(
         keywords=query,
         region="wt-wt",
         safesearch="off",
         timelimit="d",
-        max_results=5,
+        max_results=max_results,
         **kwargs,
     )
     logger.debug("The search results are: %s", results)
@@ -845,7 +908,7 @@ def translate_text(text: str, target_language: str) -> str:
     config = [
         {
             "base_url": "http://localhost:11434/v1",
-            "model": "qwen2.5:0.5b",
+            "model": "qwen3:0.6b",
             "api_key": "ollama",
             "api_type": "ollama",
             "temperature": 0.5,
@@ -907,6 +970,8 @@ async def run(model: str, user_input: str):
             "content": user_input,
         }
     ]
+    # Log the initial user message
+    logger.info("User message: %s", user_input)
 
     # First API call: Send the query and function description to the model
     response = await client.chat(
@@ -1220,6 +1285,9 @@ async def run(model: str, user_input: str):
     # Add the model's response to the conversation history
     messages.append(response["message"])
 
+    # Log the model's response message
+    logger.info("LLM response: %s", response["message"].get("content", ""))
+
     # Check if the model decided to use the provided function
     if not response["message"].get("tool_calls"):
         logger.debug("The model didn't use the function. Its response was:")
@@ -1338,6 +1406,12 @@ async def run(model: str, user_input: str):
                 }
             )
 
+        # Second API call: Get the final response from the model
+        final_response = await client.chat(model=model, messages=messages)
+        logger.info("Final LLM Response: %s", final_response["message"]["content"])
+    else:
+        logger.info("Model Response: %s", response["message"]["content"])
+
 
 # Main loop to get user input and run the conversation
 if __name__ == "__main__":
@@ -1363,5 +1437,27 @@ if __name__ == "__main__":
         #     project_name="function_call",
         #     experiment_name="send_airtime_and_messages",
         # ) as tracker:
-        asyncio.run(run("qwen2.5:0.5b", user_input=user_prompt))
+        asyncio.run(run("qwen3:0.6b", user_input=user_prompt))
         # tracker.stop()
+
+__all__ = [
+    "send_airtime",
+    "send_message",
+    "send_ussd",
+    "get_wallet_balance",
+    "make_voice_call",
+    "make_voice_call_with_text",
+    "make_voice_call_and_play_audio",
+    "get_application_balance",
+    "send_whatsapp_message",
+    "search_news",
+    "translate_text",
+    "SendSMSRequest",
+    "SendMobileDataRequest",
+    "SendUSSDRequest",
+    "MakeVoiceCallRequest",
+    "MakeVoiceCallWithTextRequest",
+    "MakeVoiceCallAndPlayAudioRequest",
+    "GetApplicationBalanceRequest",
+    "SendWhatsAppMessageRequest",
+]
