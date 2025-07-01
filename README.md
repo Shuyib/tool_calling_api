@@ -71,7 +71,7 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 └── voice_stt_mode.py - Gradio tabbed interface with Speech-to-text interface that allows edits and a text interface.   
 
 ## Attribution
-* This project uses the Qwen3-0.6B model developed by Alibaba Cloud under the Apache License 2.0. The original project can be found at [Qwen technical report](https://arxiv.org/abs/2412.15115)
+* This project uses the Qwen3-0.6B model developed by Alibaba Cloud under the Apache License 2.0. The original project can be found at [Qwen technical report](https://arxiv.org/abs/2505.09388)
 * Inspired by this example for the [Groq interface STT](https://github.com/bklieger-groq/gradio-groq-basics)
 * Microsoft Autogen was used to simulate multistep interactions. The original project can be found at [Microsoft Autogen](https://github.com/microsoft/autogen)
 * The project uses the Africa's Talking API to send airtime and messages to phone numbers. Check them out on this website [Africa's Talking API](https://africastalking.com/)
