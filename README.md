@@ -18,7 +18,7 @@ NB: The phone numbers are placeholders for the actual phone numbers.
 You need some VRAM to run this project. You can get VRAM from [here](https://vast.ai/) or [here](https://runpod.io?ref=46wgtjpg)
 We recommend 400MB-8GB of VRAM for this project. It can run on CPU however, I recommend smaller models for this.
 
-[Mistral 7B](https://ollama.com/library/mistral), **llama 3.2 3B/1B**, [**Qwen 2.5: 0.5/1.5B**](https://ollama.com/library/qwen2.5:1.5b), [nemotron-mini 4b](https://ollama.com/library/nemotron-mini) and [llama3.1 8B](https://ollama.com/library/llama3.1) are the recommended models for this project. As for the VLM's (Vision Language Models), in the workflow consider using [llama3.2-vision](https://ollama.com/library/llama3.2-vision) or [Moondream2](https://ollama.com/library/moondream) or [olm OCR](https://huggingface.co/bartowski/allenai_olmOCR-7B-0225-preview-GGUF).
+[Mistral 7B](https://ollama.com/library/mistral), **llama 3.2 3B/1B**, [**Qwen 3: 0.6/1.7B**](https://ollama.com/library/qwen3:1.7b), [nemotron-mini 4b](https://ollama.com/library/nemotron-mini) and [llama3.1 8B](https://ollama.com/library/llama3.1) are the recommended models for this project. As for the VLM's (Vision Language Models), in the workflow consider using [llama3.2-vision](https://ollama.com/library/llama3.2-vision) or [Moondream2](https://ollama.com/library/moondream) or [olm OCR](https://huggingface.co/bartowski/allenai_olmOCR-7B-0225-preview-GGUF).
 
 Ensure ollama is installed on your laptop/server and running before running this project. You can install ollama from [here](ollama.com)
 Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
@@ -311,7 +311,7 @@ curl -fsSL https://ollama.com/install.sh | sh && ollama serve > ollama.log 2>&1 
 - Install your preferred model in the same terminal.
 
 ```bash
-ollama run qwen2.5:0.5b
+ollama run qwen3:0.6b
 ```
 - Export your credentials but, if you are using a .env file, you can skip this step. It will be useful for Docker.
 
@@ -580,7 +580,7 @@ curl https://your-ngrok-url.ngrok.io/health
 ollama list
 
 # Pull required model
-ollama pull qwen2.5:0.5b
+ollama pull qwen3:0.6b
 
 # Start Ollama (if not running)
 ollama serve
