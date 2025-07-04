@@ -20,15 +20,15 @@ successful responses
 'totalDiscount': 'KES 0.4000'}
 
 Mobile data response
-'{"entries": [{"phoneNumber": "+254728303524", "provider": "Safaricom", "status":
+'{"entries": [{"phoneNumber": "+254*******", "provider": "Safaricom", "status":
  "Queued", "transactionId": "ATPid_xxxx", "value": "KES 15.0000"}]}'
 
 Make a voice call
-'{"entries": [{"phoneNumber": "+254728303524", "sessionId": "ATVId_xxxx", "status":
+'{"entries": [{"phoneNumber": "+254******", "sessionId": "ATVId_xxxx", "status":
  "Queued"}], "errorMessage": "None"}'
 
 Make a voice call with text
-{'entries': [{'phoneNumber': '+254728303524', 'sessionId': 'ATVId_xxxx',
+{'entries': [{'phoneNumber': '+254******', 'sessionId': 'ATVId_xxxx',
 'status': 'Queued'}], 'errorMessage': 'None',
 'xml_response': '<?xml version="1.0"?>\n<Response>\n
 <Say voice="woman">Hello, this is a test message</Say>\n</Response>',
