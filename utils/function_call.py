@@ -27,15 +27,52 @@ import logging
 from logging.handlers import RotatingFileHandler
 from importlib.metadata import version
 import asyncio
-import africastalking
+import re
+import warnings
+from typing import Optional, Union
+
 import ollama
 import requests
-from autogen import ConversableAgent
+
+# Suppress Pydantic UserWarning from autogen
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+    message=r".*Field.*in.*has conflict with protected namespace.*",
+)
+
+
+# Monkey-patch for pydantic issue with autogen
+# See: https://github.com/microsoft/autogen/issues/1996
+try:
+    from pydantic._internal import _typing_extra
+except ImportError:
+    pass  # not a pydantic v2.7.0+ installation, no issue
+else:
+    try:
+        # pydantic v2.7.0+
+        from pydantic._internal._typing_extra import try_eval_type
+    except ImportError:
+        # autogen is not yet compatible with pydantic v2.7.0+
+        # see: https://github.com/microsoft/autogen/issues/1996
+        # monkey-patch pydantic
+        from typing import Any, Dict, Type
+
+        def try_eval_type(t: Type[Any]) -> Type[Any]:
+            try:
+                return _typing_extra._eval_type(
+                    t, globalns=None, localns=None, type_aliases=None
+                )
+            except (NameError, TypeError):
+                return t
+
+        _typing_extra.try_eval_type = try_eval_type
+
+
+from autogen.agentchat.conversable_agent import ConversableAgent
 from pydantic import BaseModel, field_validator, ValidationError
-from typing import Union
-from typing import Optional
-import re
-from .communication_apis import send_mobile_data_wrapper, send_mobile_data_original
+
+from .communication_apis import send_mobile_data_wrapper
 
 # from codecarbon import EmissionsTracker  # Import the EmissionsTracker
 from duckduckgo_search import DDGS
@@ -454,7 +491,7 @@ def send_message(phone_number: str, message: str, username: str, **kwargs) -> st
 
     try:
         # Use absolute import for communication_apis to avoid relative import errors
-        from communication_apis import send_message as comm_send_message
+        from .communication_apis import send_message as comm_send_message
 
         masked_number = mask_phone_number(phone_number)
         logger.info("Delegating message sending to %s", masked_number)
@@ -512,7 +549,10 @@ def send_ussd(phone_number: str, code: str, **kwargs) -> str:
 
 
 def get_wallet_balance(**kwargs) -> str:
-    """Fetch the current wallet balance from Africa's Talking account using the documented API endpoint."""
+    """
+    Fetch the current wallet balance from Africa's Talking account using the
+    documented API endpoint.
+    """
     try:
         username = os.getenv("AT_USERNAME")
         api_key = os.getenv("AT_API_KEY")
@@ -842,7 +882,7 @@ def search_news(query: str, max_results: int = 5, **kwargs) -> str:
 
     Returns
     -------
-    str : The search results.
+    str : The search results, formatted for readability.
 
     Examples
     --------
@@ -860,8 +900,24 @@ def search_news(query: str, max_results: int = 5, **kwargs) -> str:
         max_results=max_results,
         **kwargs,
     )
-    logger.debug("The search results are: %s", results)
-    return json.dumps(results)
+    logger.debug("The raw search results are: %s", results)
+
+    if not results:
+        return "No news found for your query."
+
+    formatted_results = []
+    for article in results:
+        title = article.get("title", "No Title")
+        source = article.get("source", "No Source")
+        body = article.get("body", "No Summary")
+        url = article.get("url", "No URL")
+
+        formatted_article = (
+            f"Title: {title}\n" f"Source: {source}\n" f"Summary: {body}\n" f"URL: {url}"
+        )
+        formatted_results.append(formatted_article)
+
+    return "\n\n---\n\n".join(formatted_results)
 
 
 def translate_text(text: str, target_language: str) -> str:
@@ -938,7 +994,8 @@ Provide a confidence score (0-100%) and brief feedback.""",
 
     message = f"Zoe, translate '{text}' to {normalized_language}"
     result = joe.initiate_chat(zoe, message=message, max_turns=2)
-    return result
+    # Extract the last message from the chat history, which is the translation
+    return result.summary
 
 
 # Asynchronous function to handle the conversation with the model
@@ -1426,7 +1483,7 @@ if __name__ == "__main__":
         if not user_prompt:
             logger.info("No input provided. Exiting...")
             break
-        elif user_prompt.lower() == "exit":
+        if user_prompt.lower() == "exit":
             break
 
         # Run the asynchronous function with tracker
