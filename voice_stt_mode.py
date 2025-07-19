@@ -37,7 +37,8 @@ import logging
 from logging.handlers import RotatingFileHandler
 import asyncio
 from importlib.metadata import version, PackageNotFoundError
-import tempfile
+import warnings
+from typing import Optional
 
 # Third-Party Library Imports
 import gradio as gr
@@ -50,8 +51,6 @@ import edge_tts
 
 # Local Module Imports
 from utils.function_call import send_airtime, send_message, search_news, translate_text
-from typing import Optional
-from utils.models import ReceiptData, LineItem
 from utils.constants import VISION_SYSTEM_PROMPT, API_SYSTEM_PROMPT
 
 # ------------------------------------------------------------------------------------
@@ -61,6 +60,13 @@ from utils.constants import VISION_SYSTEM_PROMPT, API_SYSTEM_PROMPT
 # Initialize Langtrace
 langtrace.init(api_key=os.getenv("LANGTRACE_API_KEY"))
 groq_client = groq.Client(api_key=os.getenv("GROQ_API_KEY"))
+
+# Suppress Pydantic UserWarning from autogen
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+    message=r".*Field.*in.*has conflict with protected namespace.*",
+)
 
 # Set up the logger
 logger = logging.getLogger(__name__)
@@ -131,12 +137,20 @@ OUTPUT_FILE = "tts_output.mp3"  # Saved in current working directory
 
 
 async def text_to_speech(text: str) -> None:
+    """
+    Generate speech from text using edge-tts.
+
+    Parameters
+    ----------
+    text : str
+        The text to convert to speech.
+    """
     try:
         communicate = edge_tts.Communicate(text, VOICE)
         await communicate.save(OUTPUT_FILE)
-        logger.info(f"Generated speech output: {OUTPUT_FILE}")
+        logger.info("Generated speech output: %s", OUTPUT_FILE)
     except Exception as e:
-        logger.error(f"TTS Error: {str(e)}")
+        logger.error("TTS Error: %s", str(e))
         raise
 
 
@@ -248,7 +262,7 @@ tools = [
 @with_langtrace_root_span()
 async def process_user_message(
     message: str,
-    history: list,
+    history: list,  # pylint: disable=unused-argument
     use_vision: bool = False,
     image_path: Optional[str] = None,
 ) -> str:
@@ -286,7 +300,10 @@ async def process_user_message(
         messages.append({"role": "user", "content": message})
 
     try:
-        model_name = "llama3.2-vision" if use_vision else "qwen2.5:0.5b"
+        # Use 'llava' as it's a common Ollama vision model.
+        # Ensure you have pulled the model with `ollama pull llava`.
+        # You can use llama3.2-vision as well
+        model_name = "llava" if use_vision else "qwen2.5:0.5b"
         response = await client.chat(
             model=model_name,
             messages=messages,
@@ -294,7 +311,7 @@ async def process_user_message(
             format="json" if use_vision else None,
             options={"temperature": 0},
         )
-    except Exception as e:
+    except Exception:
         logger.exception("Failed to get response from Ollama client.")
         return "An unexpected error occurred while communicating with the assistant."
 
@@ -353,16 +370,11 @@ async def process_user_message(
                     }
                 )
 
-                return f"Function `{tool_name}` executed successfully. Response:\n{function_response}"
-            except (
-                send_airtime.ErrorType,
-                send_message.ErrorType,
-                search_news.ErrorType,
-                translate_text.ErrorType,
-            ) as e:
-                logger.error("Handled error in tool `%s`: %s", tool_name, e)
-                return f"Error executing `{tool_name}`: {str(e)}"
-            except Exception as e:  # pylint: disable=broad-exception-caught
+                return (
+                    f"Function `{tool_name}` executed successfully. Response:\n"
+                    f"{function_response}"
+                )
+            except Exception as e:
                 logger.exception("Unexpected error in tool `%s`: %s", tool_name, e)
                 return f"An unexpected error occurred while executing `{tool_name}`."
     else:
@@ -420,12 +432,12 @@ async def process_audio_and_llm(audio):
             response = await process_user_message(transcription, [])
             return f"Transcription: {transcription}\nLLM Response: {response}"
 
-        except Exception as e:
-            logger.exception("Error during transcription or LLM processing: %s", e)
-            return f"Error: {str(e)}"
-    except Exception as e:
-        logger.exception("Error in audio processing: %s", e)
-        return f"Error: {str(e)}"
+        except Exception as exc:
+            logger.exception("Error during transcription or LLM processing: %s", exc)
+            return f"Error: {str(exc)}"
+    except Exception as exc:
+        logger.exception("Error in audio processing: %s", exc)
+        return f"Error: {str(exc)}"
 
 
 def gradio_interface(message: str, history: list) -> str:
@@ -447,8 +459,8 @@ def gradio_interface(message: str, history: list) -> str:
     try:
         response = asyncio.run(process_user_message(message, history))
         return response
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        logger.exception("Error in gradio_interface: %s", e)
+    except Exception as exc:
+        logger.exception("Error in gradio_interface: %s", exc)
         return "An unexpected error occurred while processing your message."
 
 
@@ -540,9 +552,9 @@ Here are some examples of commands you can use:
                 )
                 logger.info("Audio transcribed successfully: %s", transcription)
                 return transcription
-            except Exception as e:
-                logger.exception("Error during transcription: %s", e)
-                return f"Error: {str(e)}"
+            except Exception as exc:
+                logger.exception("Error during transcription: %s", exc)
+                return f"Error: {str(exc)}"
 
         # Define TTS Function
         async def generate_tts(text: str) -> str:
@@ -552,28 +564,28 @@ Here are some examples of commands you can use:
             try:
                 communicate = edge_tts.Communicate(text, VOICE)
                 await communicate.save(OUTPUT_FILE)
-                logger.info(f"TTS audio generated successfully: {OUTPUT_FILE}")
+                logger.info("TTS audio generated successfully: %s", OUTPUT_FILE)
                 return OUTPUT_FILE
-            except Exception as e:
-                logger.error(f"TTS Generation Error: {str(e)}")
+            except Exception as exc:
+                logger.error("TTS Generation Error: %s", str(exc))
                 return None
 
         # Wire up the components
-        transcribe_button.click(
+        transcribe_button.click(  # pylint: disable=no-member
             fn=show_transcription, inputs=audio_input, outputs=transcription_preview
         )
 
         # Process the edited text
-        process_button.click(
+        process_button.click(  # pylint: disable=no-member
             fn=lambda x: asyncio.run(process_user_message(x, [])),
             inputs=transcription_preview,
             outputs=audio_output,
         )
 
         # Connect TTS Button to Function
-        tts_button.click(
+        tts_button.click(  # pylint: disable=no-member
             fn=lambda txt: asyncio.run(generate_tts(txt)),
-            inputs=audio_output,  # Replace with the component holding the final text
+            inputs=audio_output,
             outputs=tts_audio,
         )
 
@@ -596,17 +608,20 @@ Here are some examples of commands you can use:
         result_text = gr.Textbox(label="Analysis Result")
 
         async def process_with_speech(image):
+            """
+            Process image with vision model and return analysis.
+            """
             try:
                 # Get text result first
                 text_result = await process_user_message(
                     "Analyze this receipt", [], use_vision=True, image_path=image
                 )
                 return text_result
-            except Exception as e:
-                logger.error(f"Processing error: {str(e)}")
-                return str(e)
+            except Exception as exc:
+                logger.error("Processing error: %s", str(exc))
+                return str(exc)
 
-        scan_button.click(
+        scan_button.click(  # pylint: disable=no-member
             fn=lambda img: asyncio.run(process_with_speech(img)),
             inputs=image_input,
             outputs=result_text,
@@ -621,6 +636,6 @@ if __name__ == "__main__":
         logger.info("Launching Gradio interface...")
         demo.launch(inbrowser=True, server_name="0.0.0.0", server_port=7860)
         logger.info("Gradio interface launched successfully.")
-    except Exception as e:
-        logger.exception("Failed to launch Gradio interface: %s", e)
+    except Exception as exc:
+        logger.exception("Failed to launch Gradio interface: %s", exc)
     logger.info("Script execution completed")
