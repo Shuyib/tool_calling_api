@@ -423,7 +423,7 @@ async def process_audio_and_llm(audio):
         try:
             # Get transcription from Groq
             transcription = groq_client.audio.transcriptions.create(
-                model="distil-whisper-large-v3-en",
+                model="whisper-large-v3-turbo",
                 file=("audio.wav", buffer),
                 response_format="text",
             )
