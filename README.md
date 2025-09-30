@@ -50,7 +50,7 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 ├── docker-compose-codecarbon.yml - use the codecarbon project, ollama and gradio dashboard.   
 ├── DOCKER_VOICE_SETUP.md - Comprehensive guide for Docker voice functionality setup.   
 ├── .env - This file contains the environment variables for the project. (Not included in the repository)   
-├── app.py - the function_call.py using gradio as the User Interface.   
+├── app.py - the function_call.py using gradio as the User Interface with AI safety layer.   
 ├── Makefile - This file contains the commands to run the project.   
 ├── README.md - This file contains the project documentation. This is the file you are currently reading.   
 ├── requirements.txt - This file contains the dependencies for the project.   
@@ -58,16 +58,20 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 ├── summary.png - How function calling works with a diagram.   
 ├── setup_voice_server.md - Step-by-step guide for setting up voice callbacks with text-to-speech.   
 ├── voice_callback_server.py - Flask server that handles voice callbacks for custom text-to-speech messages.   
+├── examples - This directory contains example scripts and demos.   
+│   └── inspect_safety_demo.py - Interactive demo of the Inspect AI safety layer.   
 ├── tests - This directory contains the test files for the project.   
 │   ├── __init__.py - This file initializes the tests directory as a package.   
 │   ├── test_cases.py - This file contains the test cases for the project.   
-│   └── test_run.py - This file contains the code to run the test cases for the function calling LLM.   
+│   ├── test_run.py - This file contains the code to run the test cases for the function calling LLM.   
+│   └── test_inspect_safety.py - This file contains the test cases for the AI safety layer.   
 └── utils - This directory contains the utility files for the project.   
 │    ├── __init__.py - This file initializes the utils directory as a package.   
-│    ├── function_call.py - This file contains the code to call a function using LLMs.   
-│    └── communication_apis.py - This file contains the code to do with communication apis & experiments.   
-|    └── models.py - This file contains pydantic schemas for vision models.   
-|    └── constants.py - This file contains system prompts to adjust the model's behavior.   
+│    ├── function_call.py - This file contains the code to call a function using LLMs with safety checks.   
+│    ├── communication_apis.py - This file contains the code to do with communication apis & experiments.   
+│    ├── models.py - This file contains pydantic schemas for vision models.   
+│    ├── constants.py - This file contains system prompts to adjust the model's behavior.   
+│    └── inspect_safety.py - This file contains the Inspect AI safety layer implementation.   
 └── voice_stt_mode.py - Gradio tabbed interface with Speech-to-text interface that allows edits and a text interface.   
 
 ## Attribution
@@ -720,6 +724,22 @@ else:
     print(f"✗ Input flagged (score: {result.score:.2f})")
     print(f"Violations: {result.flagged_patterns}")
 ```
+
+### Interactive Demo
+
+Try the interactive demo to see the safety layer in action:
+
+```bash
+# Run the demo script
+python examples/inspect_safety_demo.py
+```
+
+The demo showcases:
+- Basic safety evaluation (safe vs unsafe prompts)
+- Detailed safety reports
+- Normal vs strict mode comparison
+- Batch evaluation of multiple prompts
+- Detection of various attack patterns
 
 ### Testing
 
