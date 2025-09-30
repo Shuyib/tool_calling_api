@@ -648,6 +648,111 @@ This project follows responsible AI practices by:
 - Providing clear documentation on how to set up and use the project, including limitations and requirements for each service.
 
 
+## AI Safety Layer (Inspect Integration)
+
+This project integrates an AI safety layer inspired by the [Inspect framework](https://inspect.aisi.org.uk) developed by the UK AI Security Institute. The safety layer provides real-time evaluation of user inputs to detect and mitigate potential security risks.
+
+### Safety Features
+
+The safety layer implements multiple evaluation strategies:
+
+1. **Prompt Injection Detection**: Identifies attempts to override or ignore system instructions
+2. **Jailbreaking Prevention**: Detects attempts to bypass AI safety protocols
+3. **Prefix Attack Detection**: Catches optimized prefix attacks that try to manipulate model behavior
+4. **Sensitive Operations Monitoring**: Tracks requests involving critical operations (airtime transfers, message sending, etc.)
+
+### How It Works
+
+The safety layer follows Inspect's Task/Solver/Scorer pattern:
+
+- **Task**: Each user input is evaluated as a task
+- **Solver**: Multiple detection algorithms analyze the input for unsafe patterns
+- **Scorer**: A safety score (0.0-1.0) is calculated based on detected violations
+
+Every user input is automatically evaluated before being processed by the LLM. The system logs:
+- Safety status (SAFE/UNSAFE)
+- Safety score (0.00-1.00)
+- Number of violations detected
+- Specific patterns that were flagged
+
+### Safety Patterns Detected
+
+The system detects various attack patterns including:
+
+```
+- "Ignore all previous instructions..."
+- "You have been jailbroken..."
+- "New instructions: ..."
+- "System prompt override: ..."
+- "Developer mode activated..."
+- "Disregard all previous commands..."
+```
+
+### Configuration
+
+The safety layer can operate in two modes:
+
+```python
+from utils.inspect_safety import create_safety_evaluator
+
+# Normal mode (balanced security)
+evaluator = create_safety_evaluator(strict_mode=False)
+
+# Strict mode (enhanced security for production)
+evaluator = create_safety_evaluator(strict_mode=True)
+```
+
+### Usage Example
+
+```python
+from utils.inspect_safety import create_safety_evaluator
+
+# Create evaluator
+evaluator = create_safety_evaluator()
+
+# Evaluate user input
+result = evaluator.evaluate_safety(user_input)
+
+# Check results
+if result.is_safe:
+    print(f"✓ Input is safe (score: {result.score:.2f})")
+else:
+    print(f"✗ Input flagged (score: {result.score:.2f})")
+    print(f"Violations: {result.flagged_patterns}")
+```
+
+### Testing
+
+The safety layer includes comprehensive test coverage:
+
+```bash
+# Run safety layer tests
+python -m pytest tests/test_inspect_safety.py -v
+```
+
+Test categories include:
+- Prompt injection detection tests
+- Jailbreaking attempt tests  
+- Prefix attack tests
+- Real-world scenario tests
+- Edge case handling
+
+### Integration Points
+
+The safety layer is integrated at two key points:
+
+1. **CLI Interface** (`utils/function_call.py`): Evaluates all user inputs before LLM processing
+2. **Gradio Web Interface** (`app.py`): Evaluates chat messages before tool execution
+
+All safety evaluations are logged to help monitor and improve security over time.
+
+### References
+
+- [Inspect Framework Documentation](https://inspect.aisi.org.uk)
+- [UK AI Security Institute](https://www.aisi.gov.uk)
+- [Best-of-N Jailbreaking Research](https://arxiv.org/abs/2412.03556)
+
+
 ## Limitations
 
 ### Africa's Talking API Limitations

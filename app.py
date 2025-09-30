@@ -91,6 +91,7 @@ from utils.function_call import (
 from utils.constants import VISION_SYSTEM_PROMPT, API_SYSTEM_PROMPT
 from utils.models import ReceiptData, LineItem
 from utils.communication_apis import send_mobile_data_wrapper
+from utils.inspect_safety import create_safety_evaluator
 
 
 # ------------------------------------------------------------------------------------
@@ -539,6 +540,40 @@ async def process_user_message(
     str
         The model's response or the function execution result.
     """
+    # ============================================================================
+    # INSPECT AI SAFETY LAYER - Evaluate input safety
+    # ============================================================================
+    # Skip safety check for vision models (different use case)
+    if not use_vision:
+        safety_evaluator = create_safety_evaluator(strict_mode=False)
+        safety_result = safety_evaluator.evaluate_safety(message)
+        
+        logger.info("=" * 60)
+        logger.info("INSPECT AI SAFETY CHECK")
+        logger.info("=" * 60)
+        logger.info("Safety status: %s", "SAFE" if safety_result.is_safe else "UNSAFE")
+        logger.info("Safety score: %.2f/1.00", safety_result.score)
+        logger.info("Violations detected: %d", len(safety_result.flagged_patterns))
+        
+        if safety_result.flagged_patterns:
+            logger.warning("Flagged patterns:")
+            for pattern in safety_result.flagged_patterns:
+                logger.warning("  - %s", pattern)
+        
+        logger.info("=" * 60)
+        
+        # If input is unsafe, log warning but continue
+        if not safety_result.is_safe:
+            logger.warning(
+                "⚠️  INPUT FAILED SAFETY CHECKS - Safety score: %.2f", 
+                safety_result.score
+            )
+            # Optionally return a warning message to the user:
+            # return f"⚠️ Safety Warning: {safety_result.message}"
+    # ============================================================================
+    # END SAFETY CHECK
+    # ============================================================================
+    
     masked_message = mask_phone_number(
         message
     )  # Assuming the message contains a phone number
