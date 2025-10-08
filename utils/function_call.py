@@ -1024,7 +1024,7 @@ async def run(model: str, user_input: str):
     # ============================================================================
     safety_evaluator = create_safety_evaluator(strict_mode=False)
     safety_result = safety_evaluator.evaluate_safety(user_input)
-    
+
     logger.info("=" * 60)
     logger.info("INSPECT AI SAFETY CHECK")
     logger.info("=" * 60)
@@ -1033,28 +1033,29 @@ async def run(model: str, user_input: str):
     logger.info("Safety score: %.2f/1.00", safety_result.score)
     logger.info("Violations detected: %d", len(safety_result.flagged_patterns))
     logger.info("Message: %s", safety_result.message)
-    
+
     if safety_result.flagged_patterns:
         logger.warning("Flagged patterns:")
         for pattern in safety_result.flagged_patterns:
             logger.warning("  - %s", pattern)
-    
+
     logger.info("=" * 60)
-    
+
     # If input is unsafe, log warning but continue (can be configured to block)
     if not safety_result.is_safe:
         logger.warning(
             "⚠️  INPUT FAILED SAFETY CHECKS - Proceeding with caution. "
-            "Safety score: %.2f", safety_result.score
+            "Safety score: %.2f",
+            safety_result.score,
         )
         # Optionally, you can return here to block unsafe requests:
         # logger.error("Request blocked due to safety concerns.")
         # return None
-    
+
     # ============================================================================
     # END SAFETY CHECK
     # ============================================================================
-    
+
     client = ollama.AsyncClient()
 
     # Initialize conversation with a user query
