@@ -67,7 +67,7 @@ clean:
 
 lint: activate install
 	#flake8 or #pylint
-	# In this scenario it'll only tell as errors found in your code
+	# In this scenario it'll only tell as errors founxd in your code
 	# R - refactor
 	# C - convention
 	pylint --disable=R,C --errors-only *.py
@@ -106,15 +106,15 @@ docker_run_test: Dockerfile.app Dockerfile.ollama
 docker_clean: Dockerfile.ollama Dockerfile.app
 	# clean docker
 	# remove docker images
-	sudo docker rmi tool_calling_api-ollama -f || true
-	sudo docker rmi tool_calling_api-app -f || true
-	sudo docker system prune -af --volumes
+	docker rmi tool_calling_api-ollama -f || true
+	docker rmi tool_calling_api-app -f || true
+	docker system prune -af --volumes
 
 
 docker_run: Dockerfile.ollama Dockerfile.app
 	# run docker
 	# this is basically a test to see if a docker image is being created successfully
-	sudo docker-compose up --build
+	docker-compose up --build
 
 setup_readme:  ## Create a README.md
 	@if [ ! -f README.md ]; then \
