@@ -16,9 +16,9 @@ Here are examples of prompts you can use:
 
 NB: The phone numbers are placeholders for the actual phone numbers.
 You need some VRAM to run this project. You can get VRAM from [here](https://vast.ai/) or [here](https://runpod.io?ref=46wgtjpg)
-We recommend 400MB-8GB of VRAM for this project. It can run on CPU however, I recommend smaller models for this. If you are looking to hosting you can also try [railway](https://railway.com?referralCode=Kte2AP)
+We recommend 400MB-8GB of VRAM for this project. It can run on CPU however, I recommend smaller models for this. If you are looking to hosting you can also try [railway](https://railway.com?referralCode=Kte2AP). For models like Gemma make sure function calling is supported.
 
-[Mistral 7B](https://ollama.com/library/mistral), **llama 3.2 3B/1B**, [**Qwen 3: 0.6/1.7B**](https://ollama.com/library/qwen3:1.7b), [nemotron-mini 4b](https://ollama.com/library/nemotron-mini) and [llama3.1 8B](https://ollama.com/library/llama3.1) are the recommended models for this project. As for the VLM's (Vision Language Models), in the workflow consider using [llama3.2-vision](https://ollama.com/library/llama3.2-vision) or [Moondream2](https://ollama.com/library/moondream) or [olm OCR](https://huggingface.co/bartowski/allenai_olmOCR-7B-0225-preview-GGUF).
+[Gemma 27B](https://ollama.com/library/gemma3:27b), [Mistral 7B](https://ollama.com/library/mistral), **llama 3.2 3B/1B**, [**Qwen 3: 0.6/1.7B**](https://ollama.com/library/qwen3:1.7b), [nemotron-mini 4b](https://ollama.com/library/nemotron-mini) and [llama3.1 8B](https://ollama.com/library/llama3.1) are the recommended models for this project. As for the VLM's (Vision Language Models), in the workflow consider using [llama3.2-vision](https://ollama.com/library/llama3.2-vision) or [Moondream2](https://ollama.com/library/moondream) or [olm OCR](https://huggingface.co/bartowski/allenai_olmOCR-7B-0225-preview-GGUF).
 
 Ensure ollama is installed on your laptop/server and running before running this project. You can install ollama from [here](ollama.com)
 Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
