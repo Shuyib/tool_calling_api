@@ -49,7 +49,14 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 ├── docker-compose.yml - use the ollama project, gradio dashboard, and voice server.   
 ├── docker-compose-codecarbon.yml - use the codecarbon project, ollama and gradio dashboard.   
 ├── DOCKER_VOICE_SETUP.md - Comprehensive guide for Docker voice functionality setup.   
-├── .env - This file contains the environment variables for the project. (Not included in the repository)   
+├── .dockerignore - This file contains the files and directories to be ignored by docker.      
+├── .devcontainer - This directory contains the devcontainer configuration files.       
+├── .env - This file contains the environment variables for the project. (Not included in the repository)      
+├── INSPECT_SAFETY_GUIDE.md - Comprehensive guide for the Inspect AI safety layer integration.    
+├── IMPLEMENTATION_SUMMARY.md - Summary of the technical implementation and features of the project.    
+├── LICENSE - This file contains the license for the project.       
+├── .gitignore - This file contains the files and directories to be ignored by git.     
+
 ├── app.py - the function_call.py using gradio as the User Interface with AI safety layer.   
 ├── Makefile - This file contains the commands to run the project.   
 ├── README.md - This file contains the project documentation. This is the file you are currently reading.   
