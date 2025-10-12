@@ -15,7 +15,7 @@ services:
       - NET_BIND_SERVICE
     # Expose port 11434 for the Ollama service
     ports:
-      - "11434:11434"
+      - "11435:11434"
     # Mount a volume for model persistence
     volumes:
       - ollama_models:/models

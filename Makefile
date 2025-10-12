@@ -67,7 +67,7 @@ clean:
 
 lint: activate install
 	#flake8 or #pylint
-	# In this scenario it'll only tell as errors found in your code
+	# In this scenario it'll only tell as errors founxd in your code
 	# R - refactor
 	# C - convention
 	pylint --disable=R,C --errors-only *.py

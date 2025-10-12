@@ -76,6 +76,7 @@ from .communication_apis import send_mobile_data_wrapper
 
 # from codecarbon import EmissionsTracker  # Import the EmissionsTracker
 from duckduckgo_search import DDGS
+from .inspect_safety import create_safety_evaluator
 
 
 def setup_logger():
@@ -1018,6 +1019,43 @@ async def run(model: str, user_input: str):
     "Send airtime to +254712345678 with an amount of 10 in currency KES"))
 
     """
+    # ============================================================================
+    # INSPECT AI SAFETY LAYER - Evaluate input safety
+    # ============================================================================
+    safety_evaluator = create_safety_evaluator(strict_mode=False)
+    safety_result = safety_evaluator.evaluate_safety(user_input)
+
+    logger.info("=" * 60)
+    logger.info("INSPECT AI SAFETY CHECK")
+    logger.info("=" * 60)
+    logger.info("User input: %s", user_input)
+    logger.info("Safety status: %s", "SAFE" if safety_result.is_safe else "UNSAFE")
+    logger.info("Safety score: %.2f/1.00", safety_result.score)
+    logger.info("Violations detected: %d", len(safety_result.flagged_patterns))
+    logger.info("Message: %s", safety_result.message)
+
+    if safety_result.flagged_patterns:
+        logger.warning("Flagged patterns:")
+        for pattern in safety_result.flagged_patterns:
+            logger.warning("  - %s", pattern)
+
+    logger.info("=" * 60)
+
+    # If input is unsafe, log warning but continue (can be configured to block)
+    if not safety_result.is_safe:
+        logger.warning(
+            "⚠️  INPUT FAILED SAFETY CHECKS - Proceeding with caution. "
+            "Safety score: %.2f",
+            safety_result.score,
+        )
+        # Optionally, you can return here to block unsafe requests:
+        # logger.error("Request blocked due to safety concerns.")
+        # return None
+
+    # ============================================================================
+    # END SAFETY CHECK
+    # ============================================================================
+
     client = ollama.AsyncClient()
 
     # Initialize conversation with a user query
