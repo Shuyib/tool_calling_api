@@ -16,9 +16,9 @@ Here are examples of prompts you can use:
 
 NB: The phone numbers are placeholders for the actual phone numbers.
 You need some VRAM to run this project. You can get VRAM from [here](https://vast.ai/) or [here](https://runpod.io?ref=46wgtjpg)
-We recommend 400MB-8GB of VRAM for this project. It can run on CPU however, I recommend smaller models for this. If you are looking to hosting you can also try [railway](https://railway.com?referralCode=Kte2AP)
+We recommend 400MB-8GB of VRAM for this project. It can run on CPU however, I recommend smaller models for this. If you are looking to hosting you can also try [railway](https://railway.com?referralCode=Kte2AP). For models like Gemma make sure function calling is supported.
 
-[Mistral 7B](https://ollama.com/library/mistral), **llama 3.2 3B/1B**, [**Qwen 3: 0.6/1.7B**](https://ollama.com/library/qwen3:1.7b), [nemotron-mini 4b](https://ollama.com/library/nemotron-mini) and [llama3.1 8B](https://ollama.com/library/llama3.1) are the recommended models for this project. As for the VLM's (Vision Language Models), in the workflow consider using [llama3.2-vision](https://ollama.com/library/llama3.2-vision) or [Moondream2](https://ollama.com/library/moondream) or [olm OCR](https://huggingface.co/bartowski/allenai_olmOCR-7B-0225-preview-GGUF).
+[Gemma 27B](https://ollama.com/library/gemma3:27b), [Mistral 7B](https://ollama.com/library/mistral), **llama 3.2 3B/1B**, [**Qwen 3: 0.6/1.7B**](https://ollama.com/library/qwen3:1.7b), [nemotron-mini 4b](https://ollama.com/library/nemotron-mini) and [llama3.1 8B](https://ollama.com/library/llama3.1) are the recommended models for this project. As for the VLM's (Vision Language Models), in the workflow consider using [llama3.2-vision](https://ollama.com/library/llama3.2-vision) or [Moondream2](https://ollama.com/library/moondream) or [olm OCR](https://huggingface.co/bartowski/allenai_olmOCR-7B-0225-preview-GGUF).
 
 Ensure ollama is installed on your laptop/server and running before running this project. You can install ollama from [here](ollama.com)
 Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
@@ -49,8 +49,15 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 ├── docker-compose.yml - use the ollama project, gradio dashboard, and voice server.   
 ├── docker-compose-codecarbon.yml - use the codecarbon project, ollama and gradio dashboard.   
 ├── DOCKER_VOICE_SETUP.md - Comprehensive guide for Docker voice functionality setup.   
-├── .env - This file contains the environment variables for the project. (Not included in the repository)   
-├── app.py - the function_call.py using gradio as the User Interface.   
+├── .dockerignore - This file contains the files and directories to be ignored by docker.      
+├── .devcontainer - This directory contains the devcontainer configuration files.       
+├── .env - This file contains the environment variables for the project. (Not included in the repository)      
+├── INSPECT_SAFETY_GUIDE.md - Comprehensive guide for the Inspect AI safety layer integration.    
+├── IMPLEMENTATION_SUMMARY.md - Summary of the technical implementation and features of the project.    
+├── LICENSE - This file contains the license for the project.       
+├── .gitignore - This file contains the files and directories to be ignored by git.     
+
+├── app.py - the function_call.py using gradio as the User Interface with AI safety layer.   
 ├── Makefile - This file contains the commands to run the project.   
 ├── README.md - This file contains the project documentation. This is the file you are currently reading.   
 ├── requirements.txt - This file contains the dependencies for the project.   
@@ -58,16 +65,20 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 ├── summary.png - How function calling works with a diagram.   
 ├── setup_voice_server.md - Step-by-step guide for setting up voice callbacks with text-to-speech.   
 ├── voice_callback_server.py - Flask server that handles voice callbacks for custom text-to-speech messages.   
+├── examples - This directory contains example scripts and demos.   
+│   └── inspect_safety_demo.py - Interactive demo of the Inspect AI safety layer.   
 ├── tests - This directory contains the test files for the project.   
 │   ├── __init__.py - This file initializes the tests directory as a package.   
 │   ├── test_cases.py - This file contains the test cases for the project.   
-│   └── test_run.py - This file contains the code to run the test cases for the function calling LLM.   
+│   ├── test_run.py - This file contains the code to run the test cases for the function calling LLM.   
+│   └── test_inspect_safety.py - This file contains the test cases for the AI safety layer.   
 └── utils - This directory contains the utility files for the project.   
 │    ├── __init__.py - This file initializes the utils directory as a package.   
-│    ├── function_call.py - This file contains the code to call a function using LLMs.   
-│    └── communication_apis.py - This file contains the code to do with communication apis & experiments.   
-|    └── models.py - This file contains pydantic schemas for vision models.   
-|    └── constants.py - This file contains system prompts to adjust the model's behavior.   
+│    ├── function_call.py - This file contains the code to call a function using LLMs with safety checks.   
+│    ├── communication_apis.py - This file contains the code to do with communication apis & experiments.   
+│    ├── models.py - This file contains pydantic schemas for vision models.   
+│    ├── constants.py - This file contains system prompts to adjust the model's behavior.   
+│    └── inspect_safety.py - This file contains the Inspect AI safety layer implementation.   
 └── voice_stt_mode.py - Gradio tabbed interface with Speech-to-text interface that allows edits and a text interface.   
 
 ## Attribution
@@ -646,6 +657,127 @@ This project follows responsible AI practices by:
 - Using anonymized placeholders for phone numbers and sensitive data in test cases.
 - Implementing proper error handling and logging to monitor API interactions.
 - Providing clear documentation on how to set up and use the project, including limitations and requirements for each service.
+
+
+## AI Safety Layer (Inspect Integration)
+
+This project integrates an AI safety layer inspired by the [Inspect framework](https://inspect.aisi.org.uk) developed by the UK AI Security Institute. The safety layer provides real-time evaluation of user inputs to detect and mitigate potential security risks.
+
+### Safety Features
+
+The safety layer implements multiple evaluation strategies:
+
+1. **Prompt Injection Detection**: Identifies attempts to override or ignore system instructions
+2. **Jailbreaking Prevention**: Detects attempts to bypass AI safety protocols
+3. **Prefix Attack Detection**: Catches optimized prefix attacks that try to manipulate model behavior
+4. **Sensitive Operations Monitoring**: Tracks requests involving critical operations (airtime transfers, message sending, etc.)
+
+### How It Works
+
+The safety layer follows Inspect's Task/Solver/Scorer pattern:
+
+- **Task**: Each user input is evaluated as a task
+- **Solver**: Multiple detection algorithms analyze the input for unsafe patterns
+- **Scorer**: A safety score (0.0-1.0) is calculated based on detected violations
+
+Every user input is automatically evaluated before being processed by the LLM. The system logs:
+- Safety status (SAFE/UNSAFE)
+- Safety score (0.00-1.00)
+- Number of violations detected
+- Specific patterns that were flagged
+
+### Safety Patterns Detected
+
+The system detects various attack patterns including:
+
+```
+- "Ignore all previous instructions..."
+- "You have been jailbroken..."
+- "New instructions: ..."
+- "System prompt override: ..."
+- "Developer mode activated..."
+- "Disregard all previous commands..."
+```
+
+### Configuration
+
+The safety layer can operate in two modes:
+
+```python
+from utils.inspect_safety import create_safety_evaluator
+
+# Normal mode (balanced security)
+evaluator = create_safety_evaluator(strict_mode=False)
+
+# Strict mode (enhanced security for production)
+evaluator = create_safety_evaluator(strict_mode=True)
+```
+
+### Usage Example
+
+```python
+from utils.inspect_safety import create_safety_evaluator
+
+# Create evaluator
+evaluator = create_safety_evaluator()
+
+# Evaluate user input
+result = evaluator.evaluate_safety(user_input)
+
+# Check results
+if result.is_safe:
+    print(f"✓ Input is safe (score: {result.score:.2f})")
+else:
+    print(f"✗ Input flagged (score: {result.score:.2f})")
+    print(f"Violations: {result.flagged_patterns}")
+```
+
+### Interactive Demo
+
+Try the interactive demo to see the safety layer in action:
+
+```bash
+# Run the demo script
+python examples/inspect_safety_demo.py
+```
+
+The demo showcases:
+- Basic safety evaluation (safe vs unsafe prompts)
+- Detailed safety reports
+- Normal vs strict mode comparison
+- Batch evaluation of multiple prompts
+- Detection of various attack patterns
+
+### Testing
+
+The safety layer includes comprehensive test coverage:
+
+```bash
+# Run safety layer tests
+python -m pytest tests/test_inspect_safety.py -v
+```
+
+Test categories include:
+- Prompt injection detection tests
+- Jailbreaking attempt tests  
+- Prefix attack tests
+- Real-world scenario tests
+- Edge case handling
+
+### Integration Points
+
+The safety layer is integrated at two key points:
+
+1. **CLI Interface** (`utils/function_call.py`): Evaluates all user inputs before LLM processing
+2. **Gradio Web Interface** (`app.py`): Evaluates chat messages before tool execution
+
+All safety evaluations are logged to help monitor and improve security over time.
+
+### References
+
+- [Inspect Framework Documentation](https://inspect.aisi.org.uk)
+- [UK AI Security Institute](https://www.aisi.gov.uk)
+- [Best-of-N Jailbreaking Research](https://arxiv.org/abs/2412.03556)
 
 
 ## Limitations

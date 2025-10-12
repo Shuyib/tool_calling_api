@@ -3,7 +3,7 @@
 # credit: DevFest Pwani 2024 in Kenya. Presentation Inference Your LLMs on the fly: Serverless Cloud Run with GPU Acceleration
 # https://jochen.kirstaetter.name/
 
-FROM ollama/ollama:0.3.3
+FROM ollama/ollama:0.6.8
 
 # Metadata
 LABEL maintainer="Shuyib" \
@@ -21,24 +21,65 @@ ENV OLLAMA_HOST=0.0.0.0:11434 \
     OLLAMA_MODELS=/models \
     OLLAMA_DEBUG=false \
     OLLAMA_KEEP_ALIVE=-1 \
-    MODEL=qwen2.5:0.5b
+    MODEL=qwen3:0.6b
 
 # Create models directory
 RUN mkdir -p /models && \
     chown -R ollama:ollama /models
 
-# define user
-USER ollama
+# Switch to root to install small utilities and add entrypoint
+USER root
 
-# Pull model
-RUN ollama serve & sleep 5 && ollama pull $MODEL
+# Install curl for healthchecks (assume Debian-based image); if the base image
+# is different this will need adjusting. Keep installs minimal and clean up.
+RUN apt-get update \
+        && apt-get install -y --no-install-recommends curl \
+        && rm -rf /var/lib/apt/lists/*
+
+# Create a lightweight entrypoint script that starts ollama in the background,
+# waits for the server to be ready, pulls the required model if missing, then
+# waits on the server process. Running pull at container start ensures the
+# model is placed in the container's /models volume.
+RUN mkdir -p /usr/local/bin && cat > /usr/local/bin/ollama-entrypoint.sh <<'EOF'
+#!/bin/sh
+set -eu
+
+# Start ollama server in background
+ollama serve &
+PID=$!
+
+# Wait for server readiness (max ~60s)
+COUNT=0
+while [ $COUNT -lt 60 ]; do
+    if curl -sSf http://127.0.0.1:11434/api/version >/dev/null 2>&1; then
+        break
+    fi
+    COUNT=$((COUNT+1))
+    sleep 1
+done
+
+# Attempt to pull model if it's not already listed
+if ! ollama list 2>/dev/null | grep -q "qwen3:0.6b"; then
+    echo "Pulling model qwen3:0.6b"
+    # Allow pull failures to not kill container but log them
+    ollama pull qwen3:0.6b || echo "Model pull failed; continue and let operator inspect logs"
+fi
+
+# Wait for the server process to exit
+wait $PID
+EOF
+
+RUN chmod +x /usr/local/bin/ollama-entrypoint.sh && chown ollama:ollama /usr/local/bin/ollama-entrypoint.sh
+
+# Revert to running as the ollama user for security
+USER ollama
 
 # Expose port
 EXPOSE 11434
 
-# Healthcheck: curl localhost:11434/api/version
+# Healthcheck: use curl which we installed
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:11434/api/version > /dev/null && echo "Ollama is healthy" || exit 1
+        CMD curl -f http://localhost:11434/api/version > /dev/null || exit 1
 
-# Entrypoint: ollama serve
-ENTRYPOINT ["ollama", "serve"]
+# Entrypoint: the wrapper script will start server and pull model
+ENTRYPOINT ["/usr/local/bin/ollama-entrypoint.sh"]
