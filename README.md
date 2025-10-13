@@ -51,7 +51,9 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 ├── DOCKER_VOICE_SETUP.md - Comprehensive guide for Docker voice functionality setup.   
 ├── .dockerignore - This file contains the files and directories to be ignored by docker.      
 ├── .devcontainer - This directory contains the devcontainer configuration files.       
-├── .env - This file contains the environment variables for the project. (Not included in the repository)      
+├── .env - This file contains the environment variables for the project. (Not included in the repository)     
+├── examples - An example implementation of how to use the inspect library
+│   ├──  examples/inspect_safety_demo.py - a demo of how to implement evaluations to the model to allow safety features.    
 ├── INSPECT_SAFETY_GUIDE.md - Comprehensive guide for the Inspect AI safety layer integration.    
 ├── IMPLEMENTATION_SUMMARY.md - Summary of the technical implementation and features of the project.    
 ├── LICENSE - This file contains the license for the project.       
@@ -89,6 +91,7 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 * Ollama for model serving and deployment. The original project can be found at [Ollama](https://ollama.com/)
 * The project uses the Gradio library to create a user interface for the function calling LLM. The original project can be found at [Gradio](https://gradio.app/)
 * The Text-to-Speech interface uses Edge TTS by Microsoft. The original project can be found at [Edge TTS](https://github.com/rany2/edge-tts). The voice chosen is Rehema which is a voice from Tanzania.
+* The inspect library which provides an open source alternative for model evaluations by the UK AI Security Institute. More information can be found [here](https://github.com/UKGovernmentBEIS/inspect_ai)
 
 
 ### License
