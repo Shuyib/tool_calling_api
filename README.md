@@ -44,7 +44,7 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 
 ## Architecture & Infrastructure
 
-This section provides comprehensive visual diagrams of the system architecture, created by **GitHub Copilot**.
+This section provides comprehensive visual diagrams of the system architecture, created by **GitHub Copilot with Claude 4.5 sonnet**.
 
 ### High-Level System Architecture
 
