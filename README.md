@@ -25,6 +25,7 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 
 
 ## Table of contents
+- [Architecture & Infrastructure](#architecture--infrastructure)
 - [File structure](#file-structure)
 - [Attribution](#attribution)
 - [Installation](#installation)
@@ -39,6 +40,321 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [License](#license)
+
+
+## Architecture & Infrastructure
+
+This section provides comprehensive visual diagrams of the system architecture, created by **GitHub Copilot**.
+
+### High-Level System Architecture
+
+```mermaid
+graph TB
+    subgraph "User Interfaces"
+        UI1[Gradio Web UI<br/>Port 7860]
+        UI2[CLI Interface<br/>function_call.py]
+        UI3[Voice STT Mode<br/>voice_stt_mode.py]
+    end
+
+    subgraph "Application Layer"
+        APP[app.py<br/>Main Gradio App]
+        FUNC[function_call.py<br/>Core Logic]
+        VOICE_SERVER[voice_callback_server.py<br/>Flask Server Port 5001]
+    end
+
+    subgraph "AI & Safety Layer"
+        SAFETY[Inspect Safety Layer<br/>inspect_safety.py]
+        OLLAMA[Ollama LLM Server<br/>Port 11434]
+        GROQ[Groq API<br/>Optional]
+    end
+
+    subgraph "Communication APIs"
+        COMM[communication_apis.py]
+        AT_AIRTIME[Airtime Service]
+        AT_SMS[SMS Service]
+        AT_VOICE[Voice Service]
+        AT_DATA[Mobile Data]
+        AT_USSD[USSD Service]
+        AT_WHATSAPP[WhatsApp Service]
+    end
+
+    subgraph "External Services"
+        AT[Africa's Talking API]
+        DDGO[DuckDuckGo News API]
+        NGROK[ngrok<br/>Public Tunnel]
+        LANGTRACE[Langtrace<br/>Monitoring]
+    end
+
+    subgraph "Storage & Logs"
+        LOGS[Log Files<br/>*.log]
+        MODELS[Ollama Models<br/>Volume Storage]
+    end
+
+    UI1 --> APP
+    UI2 --> FUNC
+    UI3 --> APP
+    
+    APP --> SAFETY
+    FUNC --> SAFETY
+    
+    SAFETY --> OLLAMA
+    SAFETY --> GROQ
+    
+    APP --> COMM
+    FUNC --> COMM
+    
+    COMM --> AT_AIRTIME
+    COMM --> AT_SMS
+    COMM --> AT_VOICE
+    COMM --> AT_DATA
+    COMM --> AT_USSD
+    COMM --> AT_WHATSAPP
+    
+    AT_AIRTIME --> AT
+    AT_SMS --> AT
+    AT_VOICE --> AT
+    AT_DATA --> AT
+    AT_USSD --> AT
+    AT_WHATSAPP --> AT
+    
+    FUNC --> DDGO
+    
+    VOICE_SERVER --> NGROK
+    AT --> NGROK
+    
+    APP --> LANGTRACE
+    FUNC --> LANGTRACE
+    
+    APP --> LOGS
+    FUNC --> LOGS
+    COMM --> LOGS
+    SAFETY --> LOGS
+    
+    OLLAMA --> MODELS
+
+    classDef userInterface fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef appLayer fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef aiLayer fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef commLayer fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef external fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef storage fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+
+    class UI1,UI2,UI3 userInterface
+    class APP,FUNC,VOICE_SERVER appLayer
+    class SAFETY,OLLAMA,GROQ aiLayer
+    class COMM,AT_AIRTIME,AT_SMS,AT_VOICE,AT_DATA,AT_USSD,AT_WHATSAPP commLayer
+    class AT,DDGO,NGROK,LANGTRACE external
+    class LOGS,MODELS storage
+```
+
+### Request Flow Diagram
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant GradioUI as Gradio UI
+    participant Safety as Safety Layer
+    participant LLM as Ollama/Groq
+    participant FuncCall as Function Caller
+    participant CommAPI as Communication API
+    participant AT as Africa's Talking
+
+    User->>GradioUI: Enter command<br/>"Send airtime to +254..."
+    GradioUI->>Safety: evaluate_safety(user_input)
+    
+    alt Unsafe Input Detected
+        Safety-->>GradioUI: SafetyCheckResult(is_safe=False)
+        GradioUI-->>User: ⚠️ Safety warning logged
+    else Safe Input
+        Safety-->>GradioUI: SafetyCheckResult(is_safe=True)
+    end
+    
+    GradioUI->>LLM: chat(message, tools)
+    LLM->>LLM: Analyze intent &<br/>select tool
+    LLM-->>GradioUI: tool_calls[]
+    
+    GradioUI->>FuncCall: execute_function(tool_call)
+    FuncCall->>CommAPI: send_airtime(params)
+    CommAPI->>AT: POST /airtime/send
+    AT-->>CommAPI: Response
+    CommAPI-->>FuncCall: Result
+    FuncCall-->>GradioUI: Formatted response
+    
+    GradioUI-->>User: ✓ Success message
+    
+    Note over GradioUI,AT: All interactions logged to<br/>func_calling_app.log
+```
+
+### Docker Infrastructure
+
+```mermaid
+graph TB
+    subgraph "Docker Compose Environment"
+        subgraph "Container: ollama-server"
+            OLLAMA_SERVICE[Ollama Service<br/>Port 11434]
+            MODELS_VOL[/models<br/>Volume Mount]
+            OLLAMA_SERVICE --- MODELS_VOL
+        end
+        
+        subgraph "Container: gradio-app"
+            GRADIO_APP[Gradio Application<br/>Port 7860]
+            ENV_VARS[Environment Variables<br/>AT_USERNAME<br/>AT_API_KEY<br/>GROQ_API_KEY<br/>LANGTRACE_API_KEY<br/>OLLAMA_HOST]
+            GRADIO_APP --- ENV_VARS
+        end
+        
+        subgraph "Container: voice-callback"
+            VOICE_FLASK[Voice Callback Server<br/>Port 5001]
+            VOICE_ENV[VOICE_CALLBACK_URL]
+            VOICE_FLASK --- VOICE_ENV
+        end
+        
+        subgraph "Persistent Storage"
+            VOL_MODELS[(ollama_models<br/>Docker Volume)]
+        end
+    end
+    
+    subgraph "External Access"
+        HOST_7860[localhost:7860<br/>Gradio Web UI]
+        HOST_11434[localhost:11434<br/>Ollama API]
+        HOST_5001[localhost:5001<br/>Voice Callbacks]
+        NGROK_TUNNEL[ngrok Tunnel<br/>https://xxx.ngrok.io]
+    end
+    
+    GRADIO_APP -->|depends_on| OLLAMA_SERVICE
+    GRADIO_APP -->|HTTP| OLLAMA_SERVICE
+    
+    MODELS_VOL -.->|persists to| VOL_MODELS
+    
+    HOST_7860 --> GRADIO_APP
+    HOST_11434 --> OLLAMA_SERVICE
+    HOST_5001 --> VOICE_FLASK
+    
+    NGROK_TUNNEL --> VOICE_FLASK
+    
+    classDef container fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef volume fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef external fill:#f1f8e9,stroke:#558b2f,stroke-width:2px
+    
+    class OLLAMA_SERVICE,GRADIO_APP,VOICE_FLASK container
+    class VOL_MODELS,MODELS_VOL volume
+    class HOST_7860,HOST_11434,HOST_5001,NGROK_TUNNEL external
+```
+
+### Voice Callback Architecture
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant App as Gradio App
+    participant VoiceServer as Voice Callback Server<br/>(Flask - Port 5001)
+    participant Ngrok as ngrok Tunnel
+    participant AT as Africa's Talking
+
+    User->>App: "Call +254... and say 'Hello'"
+    
+    App->>App: Generate session_id
+    App->>VoiceServer: POST /voice/store<br/>{session_id, message, voice_type}
+    VoiceServer->>VoiceServer: Store in memory<br/>voice_messages[session_id]
+    VoiceServer-->>App: {"status": "stored"}
+    
+    App->>AT: POST /call<br/>{from, to}
+    AT-->>App: {"status": "Queued"}
+    
+    Note over AT: Recipient answers call
+    
+    AT->>Ngrok: GET /voice/callback<br/>?sessionId=xxx
+    Ngrok->>VoiceServer: Forward request
+    VoiceServer->>VoiceServer: Retrieve message<br/>by session_id
+    VoiceServer-->>AT: XML Response<br/><Say voice="woman">Hello</Say>
+    
+    AT->>AT: Text-to-Speech conversion
+    AT->>User: Voice call with message
+    
+    Note over VoiceServer: Cleanup after 1 hour
+    
+    alt Audio Playback
+        App->>VoiceServer: POST /voice/audio/store<br/>{session_id, audio_url}
+        VoiceServer-->>App: {"status": "stored"}
+        AT->>VoiceServer: GET /voice/callback
+        VoiceServer-->>AT: XML Response<br/><Play url="..."/>
+    end
+```
+
+### AI Safety Layer Integration
+
+```mermaid
+graph TB
+    subgraph "User Input Processing"
+        INPUT[User Input]
+    end
+    
+    subgraph "Safety Evaluation Pipeline"
+        EVALUATOR[InspectSafetyLayer<br/>create_safety_evaluator]
+        
+        subgraph "Detection Solvers"
+            CHECK_INJ[check_prompt_injection<br/>15+ patterns]
+            CHECK_JAIL[check_jailbreaking<br/>10+ patterns]
+            CHECK_PREFIX[check_prefix_attack<br/>6+ patterns]
+            CHECK_SENSITIVE[check_sensitive_operations<br/>Monitor critical ops]
+        end
+        
+        SCORER[safety_score<br/>Calculate 0.0-1.0]
+    end
+    
+    subgraph "Safety Result"
+        RESULT[SafetyCheckResult<br/>- is_safe: bool<br/>- score: float<br/>- flagged_patterns: List<br/>- message: str]
+    end
+    
+    subgraph "Action Decision"
+        DECISION{Score >= 0.6?}
+        SAFE[✓ SAFE<br/>Proceed to LLM]
+        UNSAFE[✗ UNSAFE<br/>Log warning]
+    end
+    
+    subgraph "Logging & Monitoring"
+        LOGS[Detailed Logs<br/>func_calling.log<br/>func_calling_app.log]
+        METRICS[Safety Metrics<br/>- Violation count<br/>- Pattern details<br/>- Timestamps]
+    end
+    
+    INPUT --> EVALUATOR
+    EVALUATOR --> CHECK_INJ
+    EVALUATOR --> CHECK_JAIL
+    EVALUATOR --> CHECK_PREFIX
+    EVALUATOR --> CHECK_SENSITIVE
+    
+    CHECK_INJ --> SCORER
+    CHECK_JAIL --> SCORER
+    CHECK_PREFIX --> SCORER
+    CHECK_SENSITIVE --> SCORER
+    
+    SCORER --> RESULT
+    RESULT --> DECISION
+    
+    DECISION -->|Yes| SAFE
+    DECISION -->|No| UNSAFE
+    
+    SAFE --> LOGS
+    UNSAFE --> LOGS
+    
+    RESULT --> METRICS
+    METRICS --> LOGS
+    
+    classDef input fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef safety fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef solver fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef result fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef decision fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef log fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    
+    class INPUT input
+    class EVALUATOR,SCORER safety
+    class CHECK_INJ,CHECK_JAIL,CHECK_PREFIX,CHECK_SENSITIVE solver
+    class RESULT result
+    class DECISION,SAFE,UNSAFE decision
+    class LOGS,METRICS log
+```
+
+**Diagrams created by**: GitHub Copilot with Claude 4.5 Sonnet | **Date**: November 10, 2025
 
 
 ## File structure
