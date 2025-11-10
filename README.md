@@ -189,35 +189,35 @@ sequenceDiagram
 
 ```mermaid
 graph TB
-    subgraph "Docker Compose Environment"
-        subgraph "Container: ollama-server"
-            OLLAMA_SERVICE[Ollama Service<br/>Port 11434]
-            MODELS_VOL[/models<br/>Volume Mount]
+    subgraph DockerEnv["Docker Compose Environment"]
+        subgraph OllamaContainer["Container: ollama-server"]
+            OLLAMA_SERVICE["Ollama Service<br/>Port 11434"]
+            MODELS_VOL["Volume: /models"]
             OLLAMA_SERVICE --- MODELS_VOL
         end
         
-        subgraph "Container: gradio-app"
-            GRADIO_APP[Gradio Application<br/>Port 7860]
-            ENV_VARS[Environment Variables<br/>AT_USERNAME<br/>AT_API_KEY<br/>GROQ_API_KEY<br/>LANGTRACE_API_KEY<br/>OLLAMA_HOST]
+        subgraph GradioContainer["Container: gradio-app"]
+            GRADIO_APP["Gradio Application<br/>Port 7860"]
+            ENV_VARS["Environment Variables<br/>AT_USERNAME, AT_API_KEY<br/>GROQ_API_KEY, LANGTRACE_API_KEY"]
             GRADIO_APP --- ENV_VARS
         end
         
-        subgraph "Container: voice-callback"
-            VOICE_FLASK[Voice Callback Server<br/>Port 5001]
-            VOICE_ENV[VOICE_CALLBACK_URL]
+        subgraph VoiceContainer["Container: voice-callback"]
+            VOICE_FLASK["Voice Callback Server<br/>Port 5001"]
+            VOICE_ENV["VOICE_CALLBACK_URL"]
             VOICE_FLASK --- VOICE_ENV
         end
         
-        subgraph "Persistent Storage"
-            VOL_MODELS[(ollama_models<br/>Docker Volume)]
+        subgraph Storage["Persistent Storage"]
+            VOL_MODELS[("ollama_models<br/>Docker Volume")]
         end
     end
     
-    subgraph "External Access"
-        HOST_7860[localhost:7860<br/>Gradio Web UI]
-        HOST_11434[localhost:11434<br/>Ollama API]
-        HOST_5001[localhost:5001<br/>Voice Callbacks]
-        NGROK_TUNNEL[ngrok Tunnel<br/>https://xxx.ngrok.io]
+    subgraph External["External Access"]
+        HOST_7860["localhost:7860<br/>Gradio Web UI"]
+        HOST_11434["localhost:11434<br/>Ollama API"]
+        HOST_5001["localhost:5001<br/>Voice Callbacks"]
+        NGROK_TUNNEL["ngrok Tunnel<br/>https://xxx.ngrok.io"]
     end
     
     GRADIO_APP -->|depends_on| OLLAMA_SERVICE
