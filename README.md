@@ -368,8 +368,8 @@ graph TB
 ├── .dockerignore - This file contains the files and directories to be ignored by docker.      
 ├── .devcontainer - This directory contains the devcontainer configuration files.       
 ├── .env - This file contains the environment variables for the project. (Not included in the repository)     
-├── examples - An example implementation of how to use the inspect library
-│   ├──  examples/inspect_safety_demo.py - a demo of how to implement evaluations to the model to allow safety features.    
+├── examples - An example implementation of how to use the inspect library.    
+│   ├──  examples/inspect_safety_demo.py - a demo of how to implement evaluations to the model to allow safety features.       
 ├── INSPECT_SAFETY_GUIDE.md - Comprehensive guide for the Inspect AI safety layer integration.    
 ├── IMPLEMENTATION_SUMMARY.md - Summary of the technical implementation and features of the project.    
 ├── LICENSE - This file contains the license for the project.       
