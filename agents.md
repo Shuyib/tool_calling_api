@@ -58,3 +58,4 @@ Provide a concise, actionable reference for:
 ## References and sources
 - fast.ai developer style guide: https://docs.fast.ai/dev/style.html
 - Pragmatic AI Labs / Noah Gift: https://paiml.com/ and https://noahgift.com/
+- agents.md convention: https://github.com/agentsmd/agents.md
