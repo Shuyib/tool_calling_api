@@ -1,12 +1,12 @@
 # Agents Conventions
 
-This document harmonizes Makefile-derived developer conventions with augmentative best-practices inspired by Noah Gift / Pragmatic AI Labs and the fast.ai developer style guide. It is written to be non-breaking and augmentive: preserve existing Makefile behavior while recommending optional improvements for reproducibility, discoverability, CI parity, and notebook hygiene.
+This document harmonizes Makefile-derived developer conventions with augmentative best-practices inspired by Pragmatic AI Labs and the fast.ai developer style guide. It is written to be non-breaking and augmentive: preserve existing Makefile behavior while recommending optional improvements for reproducibility, discoverability, CI parity, and notebook hygiene.
 
 ## Purpose
 Provide a concise, actionable reference for:
 - How agents (developers, automation) should run tasks via Makefile.
 - How to keep local development and CI behavior consistent.
-- Notebook and coding style guidance informed by Pragmatic AI Labs (Noah Gift) and fast.ai.
+- Notebook and coding style guidance informed by Pragmatic AI Labs on YT and fast.ai.
 
 ## Quick summary of existing Makefile behavior (source: repo Makefile)
 - Virtual env: `.venv`, activate script at `.venv/bin/activate`
