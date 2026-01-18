@@ -39,6 +39,7 @@ Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 - [Limitations](#limitations)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
+- [Agents Conventions](#agents-conventions)
 - [License](#license)
 
 
@@ -1125,6 +1126,14 @@ When contributing, please ensure:
 - Edge cases and invalid inputs are properly tested
 - Sensitive content handling is verified
 - No real personal information is included in tests
+
+## Agents Conventions
+
+We added an Agents Conventions document that harmonizes Makefile-derived developer conventions with augmentative best-practices inspired by Pragmatic AI Labs (Noah Gift) and the fast.ai developer style guide.
+
+Read the full conventions and recommended Makefile snippets in: [agents.md](./agents.md)
+
+This document is intentionally augmentive and non-breaking; it preserves existing Makefile behavior while recommending optional improvements for reproducibility, CI parity, and notebook hygiene.
 
 ## License
 [License information](https://github.com/Shuyib/tool_calling_api/blob/main/LICENSE).
