@@ -546,7 +546,7 @@ Here are some examples of commands you can use:
 
                 # Get transcription from Groq
                 transcription = groq_client.audio.transcriptions.create(
-                    model="distil-whisper-large-v3-en",
+                    model="whisper-large-v3",
                     file=("audio.wav", buffer),
                     response_format="text",
                 )
