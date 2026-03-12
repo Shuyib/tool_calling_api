@@ -1,9 +1,9 @@
 africastalking==1.2.8
-black==24.8.0
+black==26.3.1
 pylint==3.2.6
 ipython==8.30.0
 ollama==0.5.1
-black==24.8.0
+black==26.3.1
 pyment==0.3.3
 codecarbon==2.7.1
 gradio>=5.31.0
