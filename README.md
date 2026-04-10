@@ -1,6 +1,6 @@
 [![Agent Continuous Integration/Continuos Delivery](https://github.com/Shuyib/tool_calling_api/actions/workflows/python-app.yml/badge.svg)](https://github.com/Shuyib/tool_calling_api/blob/main/.github/workflows/python-app.yml)
 # Exploring function calling 🗣️ 🤖 🔉 with Python and ollama 🦙
-Function-calling with Python and ollama. We are going to use the Africa's Talking API to send airtime and messages to a phone number using Natural language. Thus, creating an generative ai agent.
+Function-calling with Python and ollama. We are going to use the Africa's Talking API to send airtime, mobile data, make voice calls, and messages to a phone number using Natural language. Thus, creating an generative ai agent. Other features include: internet search, translation services, Speech to text, Text to Speech.
 
 ## Available Services
 ✅ **Currently Working**: SMS/Messages, Airtime, Voice Calls with Text-to-Speech**    
