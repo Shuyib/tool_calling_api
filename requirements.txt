@@ -26,3 +26,4 @@ flask-cors==6.0.0
 requests==2.33.0
 ag2[ollama]
 inspect-ai==0.3.54
+importlib-metadata==6.8.0
