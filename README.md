@@ -23,6 +23,7 @@ We recommend 400MB-8GB of VRAM for this project. It can run on CPU however, I re
 Ensure ollama is installed on your laptop/server and running before running this project. You can install ollama from [here](ollama.com)
 Learn more about tool calling <https://gorilla.cs.berkeley.edu/leaderboard.html>
 
+>> Uses python 3.12 
 
 ## Table of contents
 - [Architecture & Infrastructure](#architecture--infrastructure)
