@@ -1,0 +1,53 @@
+{
+  "name": "tool_calling_api",
+  "version": "1.0.0",
+  "description": "Function-calling with Node.js and ollama. Using the Africa's Talking API to send airtime and messages using Natural language.",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "keywords": [
+    "ollama",
+    "africa-talking",
+    "function-calling",
+    "ai",
+    "llm",
+    "tool-calling"
+  ],
+  "author": "Shuyib",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "africastalking": "^0.6.4",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "cors": "^2.8.5",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0",
+    "axios": "^1.7.9",
+    "ollama": "^0.5.12",
+    "zod": "^3.24.1",
+    "duckduckgo-search": "^1.0.6"
+  },
+  "devDependencies": {
+    "eslint": "^9.18.0",
+    "prettier": "^3.4.2",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.9",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.5",
+    "@types/express": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
